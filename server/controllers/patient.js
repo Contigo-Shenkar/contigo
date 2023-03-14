@@ -56,20 +56,3 @@ export const updatePatient = async (req, res) => {
     res.status(404).json({ message: "Something went wrong" });
   }
 };
-export const addGoal = async (req, res) => {
-  const { id } = req.params;
-  const { description, goalType } = req.body;
-  try {
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res
-        .status(404)
-        .json({ message: `No patient exist with id:${id}` });
-    }
-    const patient = await patientModal.findById(id);
-    patient.goals.push({ description, goalType });
-    await patient.save();
-    res.status(200).json({ data: patient });
-  } catch (error) {
-    res.status(404).json({ message: "Something went wrong" });
-  }
-};
