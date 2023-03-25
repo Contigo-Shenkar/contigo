@@ -3,7 +3,8 @@ import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import patientRouter from "./routes/patient.js";
-
+import userRouter from "./routes/user.js";
+import taskBankRouter from "./routes/taskBank.js";
 const app = express();
 const port = process.env.PORT || 3001;
 
@@ -12,6 +13,8 @@ app.use(express.json());
 app.use(cors());
 
 app.use("/api/patients", patientRouter);
+app.use("/api/users", userRouter);
+app.use("/api/taskBank", taskBankRouter);
 
 mongoose
   .set("strictQuery", false)

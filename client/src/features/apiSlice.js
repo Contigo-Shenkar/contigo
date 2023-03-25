@@ -19,12 +19,28 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ["patients"],
     }),
+    addNewPatientTask: builder.mutation({
+      query: ({ task, type, id }) => ({
+        url: `api/patients/${id}/tasks`,
+        method: "POST",
+        body: { task: task, type: type },
+      }),
+      invalidatesTags: ["patients"],
+    }),
     updatePatient: builder.mutation({
       query: (patient) => ({
         // url: `api/patients/${patient.id}`,
         url: `api/patients/63ab62da213b56abda1c5890`,
         method: "PATCH",
         body: patient,
+      }),
+      invalidatesTags: ["patients"],
+    }),
+    updateTaskStatus: builder.mutation({
+      query: ({ patientId, taskId, status }) => ({
+        url: `api/patients/${patientId}/tasks/${taskId}`,
+        method: "PATCH",
+        body: { status },
       }),
       invalidatesTags: ["patients"],
     }),
@@ -36,12 +52,19 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ["patients"],
     }),
+    getTasksByPatientId: builder.query({
+      query: ({ id }) => `api/patients/${id}/tasks`,
+      invalidatesTags: ["patients"],
+    }),
   }),
 });
 
 export const {
   useGetPatientsQuery,
   useAddNewPatientMutation,
+  useAddNewPatientTaskMutation,
   useDeletePatientMutation,
   useUpdatePatientMutation,
+  useUpdateTaskStatusMutation,
+  useGetTasksByPatientIdQuery,
 } = apiSlice;
