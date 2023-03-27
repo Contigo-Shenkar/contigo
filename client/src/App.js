@@ -13,6 +13,7 @@ import LoginForm from "./components/login/loginForm";
 // import Bar from "./scenes/bar";
 import Form from "./scenes/form";
 import PatientTasks from "./components/patientTasks/patientTasks";
+import Prediction from "./components/prediction/prediction";
 // import Line from "./scenes/line";
 // import Pie from "./scenes/pie";
 // import FAQ from "./scenes/faq";
@@ -31,6 +32,7 @@ const App = () => {
           <main className="content">
             <Topbar />
             <Routes>
+              <Route path="/predict" element={<Prediction />} />
               <Route path="/login" element={<LoginForm />} />
               <Route path="/patients" element={<PatientsList />} />
               <Route path="/patients/:id/tasks" element={<PatientTasks />} />

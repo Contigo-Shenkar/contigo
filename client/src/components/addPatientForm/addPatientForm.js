@@ -2,9 +2,9 @@ import { Box, Button, TextField } from "@mui/material";
 import { Formik, useFormikContext } from "formik";
 import * as yup from "yup";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import Header from "../../components/header/Header";
+import Header from "../header/Header";
 import { useAddNewPatientMutation } from "../../features/apiSlice";
-const Form = () => {
+const AddPatientForm = (setOpen) => {
   const [addNewPatient] = useAddNewPatientMutation();
   const isNonMobile = useMediaQuery("(min-width:600px)");
 
@@ -180,4 +180,4 @@ const initialValues = {
   age: "",
 };
 
-export default Form;
+export default AddPatientForm;
