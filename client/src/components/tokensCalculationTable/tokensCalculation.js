@@ -1,11 +1,11 @@
 import { Box } from "@mui/material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
-import Header from "../../components/header/Header";
+import Header from "../header/Header";
 import { useTheme } from "@mui/material";
 import { useGetPatientsQuery } from "../../features/apiSlice";
 
-const Contacts = () => {
+const TokensCalculation = () => {
   const { data: patients, isLoading, isError } = useGetPatientsQuery();
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -225,4 +225,4 @@ const Contacts = () => {
   );
 };
 
-export default Contacts;
+export default TokensCalculation;

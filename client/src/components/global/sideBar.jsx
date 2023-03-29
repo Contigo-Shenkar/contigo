@@ -141,7 +141,7 @@ const Sidebar = () => {
             />
             <Item
               title="Tokens Calculation"
-              to="/contacts"
+              to="/tokensCalculation"
               icon={<ContactsOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
