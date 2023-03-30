@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import { tokens } from "../../theme";
 import jwtDecode from "jwt-decode";
+import CustomButton from "../customButton/customButton";
 
 const isTokenValid = (token) => {
   try {
@@ -126,27 +127,9 @@ export default function LoginForm() {
                 },
             }}
           />
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            sx={{
-              mt: 3,
-              mb: 2,
-              backgroundColor: colors.greenAccent[600],
-              color: colors.primary[100],
-              "&:hover": {
-                backgroundColor: colors.greenAccent[800],
-              },
-            }}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <CircularProgress size={24} color="secondary" />
-            ) : (
-              "Login"
-            )}
-          </Button>
+          <CustomButton type="submit" fullWidth isLoading={isLoading}>
+            Login
+          </CustomButton>
         </Box>
       </Box>
     </Container>

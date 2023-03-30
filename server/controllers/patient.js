@@ -10,6 +10,25 @@ export const getPatientsList = async (req, res) => {
   }
 };
 
+export const getPatientById = async (req, res) => {
+  const { id } = req.params;
+  try {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(404).json({ message: `No patient exists with id:${id}` });
+    }
+
+    const patient = await patientModel.findById(id);
+
+    if (!patient) {
+      return res.status(404).json({ message: `No patient exists with id:${id}` });
+    }
+
+    res.status(200).json({ data: patient });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const addNewPatient = async (req, res) => {
   const newPatient = new patientModel({
     ...req.body,

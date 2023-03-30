@@ -7,10 +7,12 @@ import {
   addTask,
   updateTaskStatus,
   getPatientTasks,
+  getPatientById,
 } from "../controllers/patient.js";
 const router = express.Router();
 
 router.get("/", getPatientsList);
+router.get("/:id", getPatientById);
 router.post("/", addNewPatient);
 router.post("/:id/tasks", addTask);
 router.patch("/:patientId/tasks/:taskId", updateTaskStatus);

@@ -12,6 +12,7 @@ import {
   useTheme,
 } from "@mui/material";
 import AddPatientForm from "../addPatientForm/addPatientForm";
+import CustomButton from "../customButton/customButton";
 
 const PatientsList = () => {
   const theme = useTheme();
@@ -38,19 +39,7 @@ const PatientsList = () => {
   return (
     <Container fixed>
       <Box display="flex" justifyContent="flex-end" marginBottom="16px">
-        <Button
-          variant="contained"
-          onClick={handleOpen}
-          sx={{
-            backgroundColor: colors.greenAccent[600],
-            color:colors.primary[100],
-            '&:hover': {
-              backgroundColor: colors.greenAccent[800],
-            },
-          }}
-        >
-          Add New Patient
-        </Button>
+        <CustomButton onClick={handleOpen}>Add New Patient</CustomButton>
       </Box>
       <Dialog open={open} onClose={handleClose}>
         <DialogContent sx={{ minWidth: "400px" }}>

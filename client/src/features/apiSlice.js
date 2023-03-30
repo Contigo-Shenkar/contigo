@@ -27,6 +27,13 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ["patients"],
     }),
+    getPatientById: builder.query({
+      query: ({ id }) => ({
+        url: `api/patients/${id}`,
+        method: "GET",
+      }),
+      invalidatesTags: ["patients"],
+    }),
     updatePatient: builder.mutation({
       query: (patient) => ({
         // url: `api/patients/${patient.id}`,
@@ -67,4 +74,5 @@ export const {
   useUpdatePatientMutation,
   useUpdateTaskStatusMutation,
   useGetTasksByPatientIdQuery,
+  useGetPatientByIdQuery,
 } = apiSlice;

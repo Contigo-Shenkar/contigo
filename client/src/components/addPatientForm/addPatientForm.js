@@ -1,9 +1,10 @@
-import { Box, Button, TextField } from "@mui/material";
+import { Box, TextField } from "@mui/material";
 import { Formik, useFormikContext } from "formik";
 import * as yup from "yup";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import Header from "../header/Header";
 import { useAddNewPatientMutation } from "../../features/apiSlice";
+import CustomButton from "../customButton/customButton";
 const AddPatientForm = (setOpen) => {
   const [addNewPatient] = useAddNewPatientMutation();
   const isNonMobile = useMediaQuery("(min-width:600px)");
@@ -119,37 +120,9 @@ const AddPatientForm = (setOpen) => {
                 helperText={touched.age && errors.age}
                 sx={{ gridColumn: "span 4" }}
               />
-              {/*<TextField*/}
-              {/*  fullWidth*/}
-              {/*  variant="filled"*/}
-              {/*  type="text"*/}
-              {/*  label="Address 1"*/}
-              {/*  onBlur={handleBlur}*/}
-              {/*  onChange={handleChange}*/}
-              {/*  value={values.address1}*/}
-              {/*  name="address1"*/}
-              {/*  error={!!touched.address1 && !!errors.address1}*/}
-              {/*  helperText={touched.address1 && errors.address1}*/}
-              {/*  sx={{ gridColumn: "span 4" }}*/}
-              {/*/>*/}
-              {/*<TextField*/}
-              {/*  fullWidth*/}
-              {/*  variant="filled"*/}
-              {/*  type="text"*/}
-              {/*  label="Address 2"*/}
-              {/*  onBlur={handleBlur}*/}
-              {/*  onChange={handleChange}*/}
-              {/*  value={values.address2}*/}
-              {/*  name="address2"*/}
-              {/*  error={!!touched.address2 && !!errors.address2}*/}
-              {/*  helperText={touched.address2 && errors.address2}*/}
-              {/*  sx={{ gridColumn: "span 4" }}*/}
-              {/*/>*/}
             </Box>
             <Box display="flex" justifyContent="center" mt="20px">
-              <Button type="submit" color="secondary" variant="contained">
-                Create New User
-              </Button>
+              <CustomButton type="submit">Create New User</CustomButton>
             </Box>
             <SuccessMessage />
           </form>
