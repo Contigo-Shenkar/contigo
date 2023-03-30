@@ -35,9 +35,9 @@ const Patient = ({ patient }) => {
           <Avatar 
             src={avatarUrls[Math.floor(Math.random() * avatarUrls.length)]}
             sx={{
-              height: 60,
-              mb: 1,
-              width: 60
+              height: 40,
+              mr: 2,
+              width: 40
             }}
           />
           <Typography variant="h6" component="div" flexGrow={1} style={{color:colors.greenAccent[400]}}>
