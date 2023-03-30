@@ -13,6 +13,8 @@ import Form from "./scenes/form";
 import PatientTasks from "./components/patientTasks/patientTasks";
 import Prediction from "./components/prediction/prediction";
 import PrivateRoute from "./components/privateRoute/PrivateRoute";
+import PatientInfo from "./components/patientInfo/patientInfo";
+import AlertNotification from "./components/alert/alertNotification";
 
 const App = () => {
   const [theme, colorMode] = useMode();
@@ -96,6 +98,19 @@ const App = () => {
                   </PrivateRoute>
                 }
               />
+            
+            <Route path="/patientInfo" 
+            element={
+              <PrivateRoute>
+            <PatientInfo/>
+            </PrivateRoute>} />
+
+            <Route path="/alert"
+             element={
+             <PrivateRoute>
+             {<AlertNotification/>}
+             </PrivateRoute>} />
+
             </Routes>
           </main>
         </div>
