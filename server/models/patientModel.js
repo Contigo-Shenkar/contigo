@@ -2,12 +2,21 @@ import mongoose from "mongoose";
 
 const taskSchema = new mongoose.Schema({
   task: { type: String, required: true },
-  type: { type: String, enum: ["regular", "bonus"] },
+  tokenType: { type: String, enum: ["bonus", "regular"], required: true },
+  taskType: {
+    type: String,
+    enum: ["type1", "type2", "type3", "type4"],
+    required: true,
+  },
   status: {
     type: String,
     enum: ["completed", "not-completed", "run"],
     default: "run",
   },
+});
+const medicationSchema = new mongoose.Schema({
+  medication: { type: String },
+  condition: { type: String },
 });
 
 const patientSchema = new mongoose.Schema({
@@ -19,6 +28,7 @@ const patientSchema = new mongoose.Schema({
   tokens: { type: Number, default: 0 },
   stage: { type: Number, default: 1 },
   tasks: { type: [taskSchema] },
+  medication: { type: [medicationSchema] },
   createdAt: { type: Date, default: new Date() },
 });
 const patientModel = mongoose.model("patient", patientSchema);

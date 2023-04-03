@@ -99,7 +99,7 @@ const App = () => {
                 }
               />
             
-            <Route path="/patientInfo" 
+            <Route path="/patients/:id"
             element={
               <PrivateRoute>
             <PatientInfo/>

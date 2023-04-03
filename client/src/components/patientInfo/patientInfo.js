@@ -1,6 +1,7 @@
 import Header from "../../components/header/Header";
 import { tokens } from "../../theme";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
+import { useParams } from "react-router-dom";
 // import {alertNotification} from "../alert/alertNotification";
 import { useGetPatientByIdQuery } from "../../features/apiSlice";
 
@@ -16,53 +17,54 @@ import {
   Button,
   CardActions,
 } from "@mui/material";
+import Prediction from "../prediction/prediction";
 
 const PatientInfo = () => {
+  const { id } = useParams();
   const {
     data: patients,
     isLoading,
     isError,
-  } = useGetPatientByIdQuery({ id: "6416311dee42cbbe6828b246" });
-  console.log(patients?.data);
+  } = useGetPatientByIdQuery({ id: id });
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
   const user = {
     avatar: "../../assets/avatars/avatar-miron-vitold.png",
     Gender: "Male",
-    DateOfBirth: "17/09/2016",
-    name: "Netanel Admoni",
+    Age: patients?.data.age,
+    name: patients?.data.fullName,
     Department: "Department D Child Psychiatry",
   };
   const patient = patients?.data;
-  const openTasksCount =  patients?.data.tasks.reduce(
+  const openTasksCount = patients?.data.tasks.reduce(
     (total, task) => (task.status === "run" ? total + 1 : total),
     0
   );
-  const completedTasks =  patients?.data.tasks.reduce(
+  const completedTasks = patients?.data.tasks.reduce(
     (total, task) => (task.status === "completed" ? total + 1 : total),
     0
   );
-  const completedRegularTasks =  patients?.data.tasks.reduce(
+  const completedRegularTasks = patients?.data.tasks.reduce(
     (total, task) =>
       task.status === "completed" && task.type === "regular"
         ? total + 1
         : total,
     0
   );
-  const completedBonusTasks =  patients?.data.tasks.reduce(
+  const completedBonusTasks = patients?.data.tasks.reduce(
     (total, task) =>
       task.status === "completed" && task.type === "bonus" ? total + 1 : total,
     0
   );
-  const totalRegularTasks =  patients?.data.tasks.filter(
+  const totalRegularTasks = patients?.data.tasks.filter(
     (task) => task.type === "regular"
   ).length;
-  const totalBonusTasks =  patients?.data.tasks.filter(
+  const totalBonusTasks = patients?.data.tasks.filter(
     (task) => task.type === "bonus"
   ).length;
   const completedTasksPercent =
-      patients?.data.tasks.length > 0
+    patients?.data.tasks.length > 0
       ? (completedTasks / patient.tasks.length) * 100
       : 0;
   const completedRegularTasksPercent =
@@ -79,7 +81,7 @@ const PatientInfo = () => {
     (completedRegularTasks +
       (totalRegularTasks -
         completedRegularTasks -
-          patients?.data.tasks.filter(
+        patients?.data.tasks.filter(
           (task) => task.type === "regular" && task.status === "not-completed"
         ).length)) /
       totalRegularTasks >=
@@ -89,7 +91,7 @@ const PatientInfo = () => {
     (completedBonusTasks +
       (totalBonusTasks -
         completedBonusTasks -
-          patients?.data.tasks.filter(
+        patients?.data.tasks.filter(
           (task) => task.type === "bonus" && task.status === "not-completed"
         ).length)) /
       totalBonusTasks >=
@@ -105,7 +107,7 @@ const PatientInfo = () => {
   }
 
   const patientWithCompletedTasksPercent = {
-    ... patients?.data,
+    ...patients?.data,
     completedTasks,
     completedTasksPercent,
     completedRegularTasksPercent,
@@ -197,11 +199,17 @@ const PatientInfo = () => {
     <Box m="20px">
       {/* title */}
       <Header
-        title="Patient personal information"
+        title={`${
+          patients?.data.fullName.charAt(0).toUpperCase() + user.name.slice(1)
+        } personal information`}
         subtitle="Welcome to your personal card"
       />
       {/* child card */}
-      <Grid container spacing={7}>
+      <Grid
+        container
+        spacing={3}
+        sx={{ justifyContent: "center", alignItems: "center" }}
+      >
         <Grid item>
           <Card
             sx={{
@@ -212,9 +220,9 @@ const PatientInfo = () => {
             }}
           >
             <CardActions sx={{ display: "flex", justifyContent: "flex-end" }}>
-              <Button size="small" onClick={() => console.log("Edit clicked!")}>
-                Edit
-              </Button>
+              {/*<Button size="small" onClick={() => console.log("Edit clicked!")}>*/}
+              {/*  Edit*/}
+              {/*</Button>*/}
             </CardActions>
             <CardContent
               sx={{
@@ -235,10 +243,13 @@ const PatientInfo = () => {
                 />
               </Button>
               <Typography gutterBottom variant="h5">
-                {user.name}
+                {user.name.charAt(0).toUpperCase() + user.name.slice(1)}
               </Typography>
               <Typography color="text.secondary" variant="body2">
-                {user.Gender} {user.DateOfBirth}
+                {user.Gender}
+              </Typography>
+              <Typography color="text.secondary" variant="body2">
+                age: {user.Age}
               </Typography>
               <Typography color="text.secondary" variant="body2">
                 {user.Department}
@@ -314,7 +325,6 @@ const PatientInfo = () => {
           },
           "& .MuiDataGrid-footerContainer": {
             borderTop: "none",
-            backgroundColor: colors.blueAccent[700],
           },
           "& .MuiCheckbox-root": {
             color: `${colors.greenAccent[200]} !important`,
@@ -331,6 +341,7 @@ const PatientInfo = () => {
           components={{ Toolbar: GridToolbar }}
         />
       </Box>
+      <Prediction patient={patients}/>
     </Box>
   );
 };

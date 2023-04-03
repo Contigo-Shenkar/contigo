@@ -25,7 +25,6 @@ const Task = ({ patientTask, refetchTasks }) => {
   const [updateTaskStatus] = useUpdateTaskStatusMutation();
   const { data: bagData } = useGetBagQuery();
   const [updateBag] = useUpdateBagMutation();
-
   const handleComplete = async () => {
     if (patientTask.status !== "completed") {
       await updateTaskStatus({
@@ -54,7 +53,8 @@ const Task = ({ patientTask, refetchTasks }) => {
         <Grid container justifyContent="space-between" alignItems="center">
           <Grid item>
             <Typography variant="body1">
-              Task: {patientTask.task} ({patientTask.type})
+              Task: {patientTask.task} ({patientTask.tokenType} |{" "}
+              {patientTask?.taskType})
             </Typography>
           </Grid>
           <Grid item>

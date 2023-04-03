@@ -37,7 +37,8 @@ const PatientTasks = () => {
 
   const [open, setOpen] = useState(false);
   const [task, setTask] = useState("");
-  const [taskType, setTaskType] = useState("regular");
+  const [tokenType, setTokenType] = useState("regular");
+  const [taskType, setTaskType] = useState("type1");
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -48,9 +49,12 @@ const PatientTasks = () => {
   };
 
   const handleAddTask = async () => {
-    await addNewPatientTask({ task: task, type: taskType, id: id });
-    setTask("");
-    setTaskType("regular");
+    await addNewPatientTask({
+      task: task,
+      tokenType: tokenType,
+      taskType: taskType,
+      id: id,
+    });
     refetchTasks();
     handleClose();
   };
@@ -97,19 +101,35 @@ const PatientTasks = () => {
                 />
                 <FormControl fullWidth margin="normal">
                   <Select
-                    labelId="task-type-select-label"
-                    id="task-type-select"
-                    value={taskType}
-                    onChange={(e) => setTaskType(e.target.value)}
+                    labelId="token-type-select-label"
+                    id="token-type-select"
+                    value={tokenType}
+                    onChange={(e) => setTokenType(e.target.value)}
                   >
                     <MenuItem value="regular">Regular</MenuItem>
                     <MenuItem value="bonus">Bonus</MenuItem>
                   </Select>
                 </FormControl>
+                <FormControl fullWidth margin="normal">
+                  <Select
+                    labelId="task-type-select-label"
+                    id="task-type-select"
+                    value={taskType}
+                    onChange={(e) => setTaskType(e.target.value)}
+                  >
+                    <MenuItem value="type1">type1</MenuItem>
+                    <MenuItem value="type2">type2</MenuItem>
+                    <MenuItem value="type3">type3</MenuItem>
+                    <MenuItem value="type4">type4</MenuItem>
+                    <MenuItem value="type5">type5</MenuItem>
+                    <MenuItem value="type6">type6</MenuItem>
+                    <MenuItem value="type7">type7</MenuItem>
+                  </Select>
+                </FormControl>
               </DialogContent>
               <DialogActions>
                 <Button
-                    fullWidth
+                  fullWidth
                   sx={{
                     backgroundColor: colors.greenAccent[600],
                     color: colors.primary[100],

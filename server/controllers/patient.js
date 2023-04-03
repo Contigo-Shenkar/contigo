@@ -14,13 +14,17 @@ export const getPatientById = async (req, res) => {
   const { id } = req.params;
   try {
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(404).json({ message: `No patient exists with id:${id}` });
+      return res
+        .status(404)
+        .json({ message: `No patient exists with id:${id}` });
     }
 
     const patient = await patientModel.findById(id);
 
     if (!patient) {
-      return res.status(404).json({ message: `No patient exists with id:${id}` });
+      return res
+        .status(404)
+        .json({ message: `No patient exists with id:${id}` });
     }
 
     res.status(200).json({ data: patient });
@@ -77,8 +81,8 @@ export const updatePatient = async (req, res) => {
 };
 export const addTask = async (req, res) => {
   const { id } = req.params;
-  const { task, type } = req.body;
-  if (!task || !type) {
+  const { task, tokenType, taskType } = req.body;
+  if (!task || !tokenType || !taskType) {
     return res.status(400).json({ message: "task and type are required." });
   }
   try {
@@ -88,7 +92,27 @@ export const addTask = async (req, res) => {
         .json({ message: `No patient exist with id:${id}` });
     }
     const patient = await patientModel.findById(id);
-    patient.tasks.push({ task, type });
+    patient.tasks.push({ task, tokenType, taskType });
+    await patient.save();
+    res.status(200).json({ data: patient });
+  } catch (error) {
+    res.status(404).json({ message: "Something went wrong" });
+  }
+};
+export const addMedication = async (req, res) => {
+  const { id } = req.params;
+  const { medication, condition } = req.body;
+  if (!medication || !condition) {
+    return res.status(400).json({ message: "medication and condition are required." });
+  }
+  try {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res
+        .status(404)
+        .json({ message: `No patient exist with id:${id}` });
+    }
+    const patient = await patientModel.findById(id);
+    patient.medication.push({ medication, condition});
     await patient.save();
     res.status(200).json({ data: patient });
   } catch (error) {

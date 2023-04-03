@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { usePredictMutation, useTestQuery } from "../../features/predictSlice";
+import { useGetPatientByIdQuery } from "../../features/apiSlice";
 import Select from "react-select";
 import { Box } from "@mui/material";
 import { useTheme } from "@mui/material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
 
-const Prediction = () => {
+const Prediction = ({ patient }) => {
+  console.log(patient.data.medication);
   const [reviewText, setReviewText] = useState("");
   const [result, setResult] = useState(null);
   const [conditionType, setConditionType] = useState("");
@@ -137,11 +138,13 @@ const Prediction = () => {
           <option value="" disabled>
             Select a condition
           </option>
-          {conditions.map((condition) => (
-            <option key={condition} value={condition}>
-              {condition}
-            </option>
-          ))}
+          {[...new Set(patient.data.medication.map((m) => m.condition))].map(
+            (condition) => (
+              <option key={condition} value={condition}>
+                {condition}
+              </option>
+            )
+          )}
         </select>
 
         <select
@@ -152,11 +155,13 @@ const Prediction = () => {
           <option value="" disabled>
             Select a medication
           </option>
-          {medications.map((medication) => (
-            <option key={medication} value={medication}>
-              {medication}
-            </option>
-          ))}
+          {patient.data.medication
+            .filter((m) => m.condition === conditionType)
+            .map((m) => (
+              <option key={m._id} value={m.medication}>
+                {m.medication}
+              </option>
+            ))}
         </select>
 
         <button type={"submit"}>Submit</button>

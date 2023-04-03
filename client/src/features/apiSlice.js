@@ -20,10 +20,10 @@ export const apiSlice = createApi({
       invalidatesTags: ["patients"],
     }),
     addNewPatientTask: builder.mutation({
-      query: ({ task, type, id }) => ({
+      query: ({ task, tokenType, taskType, id }) => ({
         url: `api/patients/${id}/tasks`,
         method: "POST",
-        body: { task: task, type: type },
+        body: { task: task, tokenType: tokenType, taskType: taskType },
       }),
       invalidatesTags: ["patients"],
     }),
@@ -63,11 +63,16 @@ export const apiSlice = createApi({
       query: ({ id }) => `api/patients/${id}/tasks`,
       invalidatesTags: ["patients"],
     }),
+    getTasksBank: builder.query({
+      query: () => "api/taskBank",
+      providesTags: ["patients"],
+    }),
   }),
 });
 
 export const {
   useGetPatientsQuery,
+  useGetTasksBankQuery,
   useAddNewPatientMutation,
   useAddNewPatientTaskMutation,
   useDeletePatientMutation,

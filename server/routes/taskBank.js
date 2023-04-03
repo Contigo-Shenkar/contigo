@@ -1,7 +1,11 @@
 import express from "express";
-import { addTaskToTaskBank } from "../controllers/taskBank.js";
+import {
+  addNewTaskToTaskBank,
+  getAllTasksFromTaskBank,
+} from "../controllers/taskBank.js";
 const router = express.Router();
 
-router.post("/", addTaskToTaskBank);
+router.post("/", addNewTaskToTaskBank);
+router.get("/", getAllTasksFromTaskBank);
 
 export default router;
