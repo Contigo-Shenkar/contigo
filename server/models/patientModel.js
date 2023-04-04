@@ -5,7 +5,7 @@ const taskSchema = new mongoose.Schema({
   tokenType: { type: String, enum: ["bonus", "regular"], required: true },
   taskType: {
     type: String,
-    enum: ["type1", "type2", "type3", "type4"],
+    enum: ["ADHD", "ACD", "ODD", "anorexia", "intellectual disability"],
     required: true,
   },
   status: {

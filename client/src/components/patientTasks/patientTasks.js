@@ -117,13 +117,16 @@ const PatientTasks = () => {
                     value={taskType}
                     onChange={(e) => setTaskType(e.target.value)}
                   >
-                    <MenuItem value="type1">type1</MenuItem>
-                    <MenuItem value="type2">type2</MenuItem>
-                    <MenuItem value="type3">type3</MenuItem>
-                    <MenuItem value="type4">type4</MenuItem>
-                    <MenuItem value="type5">type5</MenuItem>
-                    <MenuItem value="type6">type6</MenuItem>
-                    <MenuItem value="type7">type7</MenuItem>
+                    <MenuItem value="ADHD">ADHD</MenuItem>
+                    <MenuItem value="ACD">ACD</MenuItem>
+                    <MenuItem value="ODD">ODD</MenuItem>
+                    <MenuItem value="anorexia">anorexia</MenuItem>
+                    <MenuItem value="intellectual disability">
+                      intellectual disability
+                    </MenuItem>
+                    <MenuItem value="conduct disorder">
+                      conduct disorder
+                    </MenuItem>
                   </Select>
                 </FormControl>
               </DialogContent>

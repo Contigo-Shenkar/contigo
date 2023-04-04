@@ -7,7 +7,6 @@ import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
 
 const Prediction = ({ patient }) => {
-  console.log(patient.data.medication);
   const [reviewText, setReviewText] = useState("");
   const [result, setResult] = useState(null);
   const [conditionType, setConditionType] = useState("");

@@ -116,6 +116,54 @@ const PatientInfo = () => {
     openTasksCount,
   };
 
+  const analyzeTasks = (tasks) => {
+    const taskTypeStats = {};
+
+    tasks?.forEach((task) => {
+      const taskType = task.taskType;
+      if (!taskTypeStats[taskType]) {
+        taskTypeStats[taskType] = {
+          total: 0,
+          completed: 0,
+          notCompleted: 0,
+        };
+      }
+      taskTypeStats[taskType].total += 1;
+      if (task.status === "completed") {
+        taskTypeStats[taskType].completed += 1;
+      } else if (task.status === "not-completed") {
+        taskTypeStats[taskType].notCompleted += 1;
+      }
+    });
+
+    let bestTaskType = "";
+    let worstTaskType = "";
+    let highestSuccessRate = -1;
+    let lowestSuccessRate = 101;
+
+    for (const taskType in taskTypeStats) {
+      const stats = taskTypeStats[taskType];
+      const successRate = (stats.completed / stats.total) * 100;
+      if (successRate > highestSuccessRate) {
+        highestSuccessRate = successRate;
+        bestTaskType = taskType;
+      }
+      if (successRate < lowestSuccessRate) {
+        lowestSuccessRate = successRate;
+        worstTaskType = taskType;
+      }
+    }
+
+    return {
+      bestTaskType,
+      worstTaskType,
+      taskTypeStats,
+    };
+  };
+
+  const tasksAnalysis = analyzeTasks(patients?.data.tasks);
+  console.log(tasksAnalysis);
+
   const columns = [
     {
       field: "fullName",
@@ -295,8 +343,10 @@ const PatientInfo = () => {
                 Third Card
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla
-                aliquet orci eget nibh ultricies vehicula.
+                Best type of tasks: {tasksAnalysis?.bestTaskType}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Worst type of tasks: {tasksAnalysis?.worstTaskType}
               </Typography>
             </CardContent>
           </Card>
@@ -341,7 +391,7 @@ const PatientInfo = () => {
           components={{ Toolbar: GridToolbar }}
         />
       </Box>
-      <Prediction patient={patients}/>
+      <Prediction patient={patients} />
     </Box>
   );
 };
