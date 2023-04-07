@@ -17,6 +17,10 @@ import PatientInfo from "./components/patientInfo/patientInfo";
 import AlertNotification from "./components/alert/alertNotification";
 import ChildCalendar from "./scenes/calendar/index";
 import BarChart from "./components/barChart/BarChart";
+import PieChart from "./components/pieChart/pieChart";
+import LineChart from "./components/lineChart/lineChart";
+
+
 
 const App = () => {
   const [theme, colorMode] = useMode();
@@ -69,7 +73,7 @@ const App = () => {
                 }
               />
               <Route
-                path="/team"
+                path="/patientsList"
                 element={
                   <PrivateRoute>
                     <PatientsList />
@@ -119,11 +123,22 @@ const App = () => {
              {<ChildCalendar/>}
              </PrivateRoute>} />
 
-
              <Route path="/barChart"
              element={
              <PrivateRoute>
              {<BarChart/>}
+             </PrivateRoute>} />
+
+             <Route path="/pieChart"
+             element={
+             <PrivateRoute>
+             {<PieChart/>}
+             </PrivateRoute>} />
+
+             <Route path="/lineChart"
+             element={
+             <PrivateRoute>
+             {<LineChart/>}
              </PrivateRoute>} />
 
             </Routes>

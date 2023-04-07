@@ -6,16 +6,18 @@ import { Link } from "react-router-dom";
 import { tokens } from "../../theme";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import PeopleOutlinedIcon from "@mui/icons-material/PeopleOutlined";
-import ContactsOutlinedIcon from "@mui/icons-material/ContactsOutlined";
+import FunctionsIcon from '@mui/icons-material/Functions';
 import ReceiptOutlinedIcon from "@mui/icons-material/ReceiptOutlined";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
-import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
 import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
 import PieChartOutlineOutlinedIcon from "@mui/icons-material/PieChartOutlineOutlined";
 import TimelineOutlinedIcon from "@mui/icons-material/TimelineOutlined";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
+import SummarizeIcon from '@mui/icons-material/Summarize';
+import TableChartIcon from '@mui/icons-material/TableChart';
+
 
 const Item = ({ title, to, icon, selected, setSelected }) => {
   const theme = useTheme();
@@ -125,6 +127,13 @@ const Sidebar = () => {
               selected={selected}
               setSelected={setSelected}
             />
+            <Item
+              title="Profile"
+              to="/profile"
+              icon={<PersonOutlinedIcon />}
+              selected={selected}
+              setSelected={setSelected}
+            />
             <Typography
               variant="h6"
               color={colors.grey[300]}
@@ -140,9 +149,17 @@ const Sidebar = () => {
               setSelected={setSelected}
             />
             <Item
+              title="Tokens"
+              to="/tokens"
+              icon={<TableChartIcon />}
+              selected={selected}
+              setSelected={setSelected}
+            />
+
+            <Item
               title="Tokens Calculation"
               to="/tokensCalculation"
-              icon={<ContactsOutlinedIcon />}
+              icon={<FunctionsIcon />}
               selected={selected}
               setSelected={setSelected}
             />
@@ -153,6 +170,7 @@ const Sidebar = () => {
               selected={selected}
               setSelected={setSelected}
             />
+            
 
             <Typography
               variant="h6"
@@ -176,9 +194,9 @@ const Sidebar = () => {
               setSelected={setSelected}
             />
             <Item
-              title="FAQ Page"
-              to="/faq"
-              icon={<HelpOutlineOutlinedIcon />}
+              title="Home Report"
+              to="/homeReport"
+              icon={<SummarizeIcon />}
               selected={selected}
               setSelected={setSelected}
             />
@@ -192,21 +210,21 @@ const Sidebar = () => {
             </Typography>
             <Item
               title="Bar Chart"
-              to="/bar"
+              to="/barChart"
               icon={<BarChartOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
             />
             <Item
               title="Pie Chart"
-              to="/pie"
+              to="/pieChart"
               icon={<PieChartOutlineOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
             />
             <Item
               title="Line Chart"
-              to="/line"
+              to="/lineChart"
               icon={<TimelineOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}

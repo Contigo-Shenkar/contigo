@@ -1,5 +1,5 @@
 import { tokens } from "../theme";
-/*The patient's data will be delivered from api calls */
+
 export const mockDataTeam = [
   {
     id: 1,
