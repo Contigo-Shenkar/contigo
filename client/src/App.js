@@ -19,7 +19,8 @@ import ChildCalendar from "./scenes/calendar/index";
 import BarChart from "./components/barChart/BarChart";
 import PieChart from "./components/pieChart/pieChart";
 import LineChart from "./components/lineChart/lineChart";
-
+import ProgressCircle from "./components/progressCircle/ProgressCircle";
+import StatBox from "./components/statBox/StatBox";
 
 
 const App = () => {
@@ -141,6 +142,20 @@ const App = () => {
              {<LineChart/>}
              </PrivateRoute>} />
 
+
+             <Route path="/dashboard"
+             element={
+             <PrivateRoute>
+             {<ProgressCircle/>}
+             </PrivateRoute>} />
+
+             <Route path="/dashboard"
+             element={
+             <PrivateRoute>
+             {<StatBox/>}
+             </PrivateRoute>} />
+
+             
             </Routes>
           </main>
         </div>
