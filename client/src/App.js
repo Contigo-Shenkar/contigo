@@ -15,6 +15,8 @@ import Prediction from "./components/prediction/prediction";
 import PrivateRoute from "./components/privateRoute/PrivateRoute";
 import PatientInfo from "./components/patientInfo/patientInfo";
 import AlertNotification from "./components/alert/alertNotification";
+import ChildCalendar from "./scenes/calendar/index";
+import BarChart from "./components/barChart/BarChart";
 
 const App = () => {
   const [theme, colorMode] = useMode();
@@ -109,6 +111,19 @@ const App = () => {
              element={
              <PrivateRoute>
              {<AlertNotification/>}
+             </PrivateRoute>} />
+
+             <Route path="/calendar"
+             element={
+             <PrivateRoute>
+             {<ChildCalendar/>}
+             </PrivateRoute>} />
+
+
+             <Route path="/barChart"
+             element={
+             <PrivateRoute>
+             {<BarChart/>}
              </PrivateRoute>} />
 
             </Routes>
