@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useGetPatientsQuery } from "../../features/apiSlice";
-import Patient from "../patient/patient.component";
+import PatientRow from "./patient-row/patient-row";
 import { tokens } from "../../theme";
 import {
   Container,
@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import AddPatientForm from "../addPatientForm/addPatientForm";
 import CustomButton from "../customButton/customButton";
+import Header from "../header/Header";
 
 const PatientsList = () => {
   const theme = useTheme();
@@ -38,7 +39,8 @@ const PatientsList = () => {
 
   return (
     <Container fixed>
-      <Box display="flex" justifyContent="flex-end" marginBottom="16px">
+      <Box display="flex" justifyContent="space-between" alignItems="center">
+        <Header title="Patient's List" subtitle="bla bla" />
         <CustomButton onClick={handleOpen}>Add New Patient</CustomButton>
       </Box>
       <Dialog open={open} onClose={handleClose}>
@@ -47,7 +49,7 @@ const PatientsList = () => {
         </DialogContent>
       </Dialog>
       {patients.data.map((patient, index) => (
-        <Patient key={index} patient={patient} />
+        <PatientRow key={index} patient={patient} />
       ))}
     </Container>
   );

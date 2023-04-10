@@ -27,12 +27,19 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ["patients"],
     }),
+    deletePatientTask: builder.mutation({
+      query: ({ patientId, taskId }) => ({
+        url: `api/patients/${patientId}/tasks/${taskId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["patients"],
+    }),
     getPatientById: builder.query({
       query: ({ id }) => ({
         url: `api/patients/${id}`,
         method: "GET",
       }),
-      invalidatesTags: ["patients"],
+      providesTags: ["patients"],
     }),
     updatePatient: builder.mutation({
       query: (patient) => ({
@@ -52,10 +59,9 @@ export const apiSlice = createApi({
       invalidatesTags: ["patients"],
     }),
     deletePatient: builder.mutation({
-      query: ({ id }) => ({
+      query: (id) => ({
         url: `api/patients/${id}`,
         method: "DELETE",
-        body: id,
       }),
       invalidatesTags: ["patients"],
     }),
@@ -75,9 +81,11 @@ export const {
   useGetTasksBankQuery,
   useAddNewPatientMutation,
   useAddNewPatientTaskMutation,
+  useDeletePatientTaskMutation,
   useDeletePatientMutation,
   useUpdatePatientMutation,
   useUpdateTaskStatusMutation,
   useGetTasksByPatientIdQuery,
   useGetPatientByIdQuery,
+  useLazyGetPatientByIdQuery,
 } = apiSlice;

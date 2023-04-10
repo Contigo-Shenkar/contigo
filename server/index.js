@@ -12,6 +12,8 @@ dotenv.config();
 app.use(express.json());
 app.use(cors());
 
+
+// localhost:3001/api/patients
 app.use("/api/patients", patientRouter);
 app.use("/api/users", userRouter);
 app.use("/api/taskBank", taskBankRouter);
@@ -21,6 +23,7 @@ mongoose
   .connect(process.env.MONGO_URL)
   .then(() => {
     console.log("connected to MongoDB...");
-    app.listen(port, () => console.log(`Listening on port ${port}`));
   })
   .catch((err) => console.log(`${err} did not connect`));
+
+app.listen(port, () => console.log(`Listening on port ${port}`));

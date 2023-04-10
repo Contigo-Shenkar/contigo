@@ -6,6 +6,7 @@ const secret = "test";
 
 export const signIn = async (req, res) => {
   const { email, password } = req.body;
+  console.log("req.body", req.body);
 
   try {
     const oldUser = await UserModel.findOne({ email });

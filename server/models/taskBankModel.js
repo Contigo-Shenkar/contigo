@@ -5,7 +5,7 @@ const taskBankSchema = new mongoose.Schema({
   tokenType: { type: String, enum: ["bonus", "regular"], required: true },
   taskType: {
     type: String,
-    enum: ["type1", "type2", "type3", "type4"],
+    enum: ["draw", "dance", "sing", "run"],
     required: true,
   },
 });

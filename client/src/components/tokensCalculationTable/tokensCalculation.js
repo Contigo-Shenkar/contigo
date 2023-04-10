@@ -1,45 +1,76 @@
-import { Box } from "@mui/material";
+import {
+  Box,
+  FormControl,
+  FormControlLabel,
+  FormLabel,
+  Radio,
+  RadioGroup,
+} from "@mui/material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
 import Header from "../header/Header";
 import { useTheme } from "@mui/material";
 import { useGetPatientsQuery } from "../../features/apiSlice";
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { STATUSES } from "../patientTasks/tasks";
+
+const weekInMs = 7 * 24 * 60 * 60 * 1000;
 
 const TokensCalculation = () => {
+  const [date, setDate] = useState("all");
   const { data: patients, isLoading, isError } = useGetPatientsQuery();
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   //////////////////////////////////////////////////
 
   const patientsWithCompletedTasksPercent = patients?.data.map((patient) => {
-    const openTasksCount = patient.tasks.reduce(
-      (total, task) => (task.status === "run" ? total + 1 : total),
-      0
-    );
-    const completedTasks = patient.tasks.reduce(
-      (total, task) => (task.status === "completed" ? total + 1 : total),
-      0
-    );
-    const completedRegularTasks = patient.tasks.reduce(
-      (total, task) =>
-        task.status === "completed" && task.type === "regular"
-          ? total + 1
-          : total,
-      0
-    );
-    const completedBonusTasks = patient.tasks.reduce(
-      (total, task) =>
-        task.status === "completed" && task.type === "bonus"
-          ? total + 1
-          : total,
-      0
-    );
-    const totalRegularTasks = patient.tasks.filter(
-      (task) => task.type === "regular"
-    ).length;
-    const totalBonusTasks = patient.tasks.filter(
-      (task) => task.type === "bonus"
-    ).length;
+    let openTasksCount = 0;
+    let completedTasks = 0;
+    let completedRegularTasks = 0;
+    let completedBonusTasks = 0;
+    let totalRegularTasks = 0;
+    let totalBonusTasks = 0;
+    let regularNotCompletedTasks = 0;
+    let bonusNotCompletedTasks = 0;
+    const today = new Date().toLocaleDateString();
+    for (const task of patient.tasks) {
+      if (
+        date === "day" &&
+        new Date(task.createdAt).toLocaleDateString() !== today
+      ) {
+        continue;
+      }
+      if (
+        date === "week" &&
+        !(new Date(task.createdAt).getTime() > new Date().getTime() - weekInMs)
+      ) {
+        continue;
+      }
+      if (task.status === STATUSES.IN_PROGRESS) {
+        openTasksCount++;
+      } else if (task.status === STATUSES.COMPLETED) {
+        completedTasks++;
+        if (task.type === "regular") {
+          completedRegularTasks++;
+        } else if (task.type === "bonus") {
+          completedBonusTasks++;
+        }
+      } else if (task.status === STATUSES.NOT_STARTED) {
+        if (task.type === "regular") {
+          regularNotCompletedTasks++;
+        } else if (task.type === "bonus") {
+          totalBonusTasks++;
+        }
+
+        if (task.type === "regular") {
+          totalRegularTasks++;
+        } else if (task.type === "bonus") {
+          bonusNotCompletedTasks++;
+        }
+      }
+    }
+
     const completedTasksPercent =
       patient.tasks.length > 0
         ? (completedTasks / patient.tasks.length) * 100
@@ -58,19 +89,13 @@ const TokensCalculation = () => {
       (completedRegularTasks +
         (totalRegularTasks -
           completedRegularTasks -
-          patient.tasks.filter(
-            (task) => task.type === "regular" && task.status === "not-completed"
-          ).length)) /
+          regularNotCompletedTasks)) /
         totalRegularTasks >=
       0.8;
 
     const canStillSucceedBonusTasks =
       (completedBonusTasks +
-        (totalBonusTasks -
-          completedBonusTasks -
-          patient.tasks.filter(
-            (task) => task.type === "bonus" && task.status === "not-completed"
-          ).length)) /
+        (totalBonusTasks - completedBonusTasks - bonusNotCompletedTasks)) /
         totalBonusTasks >=
       0.2;
 
@@ -102,6 +127,16 @@ const TokensCalculation = () => {
       headerName: "Name",
       flex: 1,
       cellClassName: "name-column--cell",
+      renderCell: (params) => {
+        return (
+          <Link
+            to={`/patients/${params.row._id}`}
+            style={{ color: colors.greenAccent[300] }}
+          >
+            {params.value}
+          </Link>
+        );
+      },
     },
     {
       field: "id",
@@ -143,7 +178,6 @@ const TokensCalculation = () => {
       headerAlign: "center",
       align: "center",
     },
-
     {
       field: "stage",
       headerName: "Stage",
@@ -175,13 +209,34 @@ const TokensCalculation = () => {
   if (isError) {
     return <div>Error fetching tasks</div>;
   }
+  console.log("patients", patients[0]);
 
+  console.log(date);
   return (
     <Box m="20px">
       <Header
         title="Tokens Calculation System"
         subtitle="Managing a tokens calculation system for the Children’s Psychiatric Unit "
       />
+
+      <FormControl>
+        <FormLabel id="demo-radio-buttons-group-label">Choose Date</FormLabel>
+        <RadioGroup
+          aria-labelledby="demo-radio-buttons-group-label"
+          defaultValue="all"
+          name="radio-buttons-group"
+          row
+          onChange={(e) => setDate(e.target.value)}
+        >
+          <FormControlLabel value="day" control={<Radio />} label="Today" />
+          <FormControlLabel
+            value="week"
+            control={<Radio />}
+            label="This Week"
+          />
+          <FormControlLabel value="all" control={<Radio />} label="All time" />
+        </RadioGroup>
+      </FormControl>
       <Box
         m="40px 0 0 0"
         height="75vh"

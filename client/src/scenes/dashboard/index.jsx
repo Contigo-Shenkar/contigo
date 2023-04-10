@@ -1,37 +1,37 @@
-import { Box, Button, IconButton, Typography, useTheme } from "@mui/material";
+import { Box, Typography, useTheme } from "@mui/material";
 import { tokens } from "../../theme";
 import { mockTransactions } from "../../data/mockData";
 import Header from "../../components/header/Header";
 // import icons
-import PointOfSaleIcon from "@mui/icons-material/PointOfSale";
-import PersonAddIcon from "@mui/icons-material/PersonAdd";
-import FamilyRestroomIcon from '@mui/icons-material/FamilyRestroom';
-import ChildCareIcon from '@mui/icons-material/ChildCare';
-import TokenIcon from '@mui/icons-material/Token';
-import VaccinesIcon from '@mui/icons-material/Vaccines';
+import FamilyRestroomIcon from "@mui/icons-material/FamilyRestroom";
+import ChildCareIcon from "@mui/icons-material/ChildCare";
+import TokenIcon from "@mui/icons-material/Token";
+import VaccinesIcon from "@mui/icons-material/Vaccines";
 //import charts for dashboard
 import ProgressCircle from "../../components/progressCircle/ProgressCircle";
 import BarChart from "../../components/barChart/BarChart";
 import LineChart from "../../components/lineChart/lineChart";
-import PieChart from "../../components/pieChart/pieChart";
 import StatBox from "../../components/statBox/StatBox";
 
 const Dashboard = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-    return (
+  return (
     <Box m="20px">
       {/* HEADER */}
       <Box display="flex" justifyContent="space-between" alignItems="center">
         <Header title="Dashboard" subtitle="Welcome to your dashboard" />
       </Box>
 
-
       {/* Title of Weekely updates */}
-      <Typography color={colors.grey[100]} variant="h5" fontWeight="800" alignItems="center">
-          Weekly Patients Updates
+      <Typography
+        color={colors.grey[100]}
+        variant="h5"
+        fontWeight="800"
+        alignItems="center"
+      >
+        Weekly Patients Updates
       </Typography>
-
 
       {/* GRID & CHARTS */}
       <Box
@@ -117,7 +117,6 @@ const Dashboard = () => {
             }
           />
         </Box>
-          
 
         {/* ROW 2 */}
         <Box
@@ -148,7 +147,6 @@ const Dashboard = () => {
                 $59,342.32
               </Typography>
             </Box>
-            
           </Box>
           <Box height="250px" m="-20px 0 0 0">
             <LineChart isDashboard={true} />
@@ -261,7 +259,6 @@ const Dashboard = () => {
           >
             Updated Tokens
           </Typography>
-          
         </Box>
       </Box>
     </Box>

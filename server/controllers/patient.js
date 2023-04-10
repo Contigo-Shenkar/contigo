@@ -1,3 +1,4 @@
+import { STATUSES } from "../helpers/tasks.js";
 import patientModel from "../models/patientModel.js";
 import mongoose from "mongoose";
 
@@ -99,11 +100,42 @@ export const addTask = async (req, res) => {
     res.status(404).json({ message: "Something went wrong" });
   }
 };
+export const deleteTask = async (req, res) => {
+  const { patientId, taskId } = req.params;
+
+  try {
+    if (!mongoose.Types.ObjectId.isValid(patientId)) {
+      return res
+        .status(404)
+        .json({ message: `No patient exist with id:${patientId}` });
+    }
+
+    const patient = await patientModel.findById(patientId);
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found." });
+    }
+
+    const task = patient.tasks.id(taskId);
+    if (!task) {
+      return res.status(404).json({ message: "Task not found." });
+    }
+
+    task.remove();
+    await patient.save();
+    res.status(200).json({ data: patient });
+  } catch (error) {
+    console.log(error);
+    res.status(404).json({ message: error.message });
+  }
+};
+
 export const addMedication = async (req, res) => {
   const { id } = req.params;
   const { medication, condition } = req.body;
   if (!medication || !condition) {
-    return res.status(400).json({ message: "medication and condition are required." });
+    return res
+      .status(400)
+      .json({ message: "medication and condition are required." });
   }
   try {
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -112,7 +144,7 @@ export const addMedication = async (req, res) => {
         .json({ message: `No patient exist with id:${id}` });
     }
     const patient = await patientModel.findById(id);
-    patient.medication.push({ medication, condition});
+    patient.medication.push({ medication, condition });
     await patient.save();
     res.status(200).json({ data: patient });
   } catch (error) {
@@ -139,9 +171,11 @@ export const getPatientTasks = async (req, res) => {
 export const updateTaskStatus = async (req, res) => {
   const { patientId, taskId } = req.params;
   const { status } = req.body;
-  if (!status || !["completed", "not-completed", "run"].includes(status)) {
+  if (!status || !Object.values(STATUSES).includes(status)) {
     return res.status(400).json({
-      message: "Valid status is required (completed, not-completed, or run).",
+      message: `Valid status is required (${Object.values(STATUSES).join(
+        ", "
+      )}).`,
     });
   }
   try {
@@ -157,12 +191,19 @@ export const updateTaskStatus = async (req, res) => {
     }
 
     task.status = status;
+    if (status === STATUSES.COMPLETED) {
+      task.completedAt = new Date();
+    } else {
+      task.completedAt = null;
+    }
     patient.markModified("tasks");
     await patient.save();
 
     return res.status(200).json({ message: "Task status updated.", task });
   } catch (error) {
     console.error("Error updating task status:", error.message);
-    return res.status(500).json({ message: "Error updating task status." });
+    return res
+      .status(500)
+      .json({ message: "Error updating task status: " + error.message });
   }
 };

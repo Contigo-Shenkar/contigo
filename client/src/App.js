@@ -22,7 +22,6 @@ import LineChart from "./components/lineChart/lineChart";
 import ProgressCircle from "./components/progressCircle/ProgressCircle";
 import StatBox from "./components/statBox/StatBox";
 
-
 const App = () => {
   const [theme, colorMode] = useMode();
   const isAuthenticated = !!localStorage.getItem("token");
@@ -105,57 +104,50 @@ const App = () => {
                   </PrivateRoute>
                 }
               />
-            
-            <Route path="/patients/:id"
-            element={
-              <PrivateRoute>
-            <PatientInfo/>
-            </PrivateRoute>} />
 
-            <Route path="/alert"
-             element={
-             <PrivateRoute>
-             {<AlertNotification/>}
-             </PrivateRoute>} />
+              <Route
+                path="/patients/:id"
+                element={
+                  <PrivateRoute>
+                    <PatientInfo />
+                  </PrivateRoute>
+                }
+              />
 
-             <Route path="/calendar"
-             element={
-             <PrivateRoute>
-             {<ChildCalendar/>}
-             </PrivateRoute>} />
+              <Route
+                path="/alert"
+                element={<PrivateRoute>{<AlertNotification />}</PrivateRoute>}
+              />
 
-             <Route path="/barChart"
-             element={
-             <PrivateRoute>
-             {<BarChart/>}
-             </PrivateRoute>} />
+              <Route
+                path="/calendar"
+                element={<PrivateRoute>{<ChildCalendar />}</PrivateRoute>}
+              />
 
-             <Route path="/pieChart"
-             element={
-             <PrivateRoute>
-             {<PieChart/>}
-             </PrivateRoute>} />
+              <Route
+                path="/barChart"
+                element={<PrivateRoute>{<BarChart />}</PrivateRoute>}
+              />
 
-             <Route path="/lineChart"
-             element={
-             <PrivateRoute>
-             {<LineChart/>}
-             </PrivateRoute>} />
+              <Route
+                path="/pieChart"
+                element={<PrivateRoute>{<PieChart />}</PrivateRoute>}
+              />
 
+              <Route
+                path="/lineChart"
+                element={<PrivateRoute>{<LineChart />}</PrivateRoute>}
+              />
 
-             <Route path="/dashboard"
-             element={
-             <PrivateRoute>
-             {<ProgressCircle/>}
-             </PrivateRoute>} />
+              <Route
+                path="/dashboard"
+                element={<PrivateRoute>{<ProgressCircle />}</PrivateRoute>}
+              />
 
-             <Route path="/dashboard"
-             element={
-             <PrivateRoute>
-             {<StatBox/>}
-             </PrivateRoute>} />
-
-             
+              <Route
+                path="/dashboard"
+                element={<PrivateRoute>{<StatBox />}</PrivateRoute>}
+              />
             </Routes>
           </main>
         </div>

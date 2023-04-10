@@ -18,6 +18,52 @@ import {
   CardActions,
 } from "@mui/material";
 import Prediction from "../prediction/prediction";
+import { STATUSES } from "../patientTasks/tasks";
+
+export const analyzeTasks = (tasks) => {
+  const taskTypeStats = {};
+
+  tasks?.forEach((task) => {
+    const taskType = task.taskType;
+    if (!taskTypeStats[taskType]) {
+      taskTypeStats[taskType] = {
+        total: 0,
+        completed: 0,
+        notCompleted: 0,
+      };
+    }
+    taskTypeStats[taskType].total += 1;
+    if (task.status === STATUSES.COMPLETED) {
+      taskTypeStats[taskType].completed += 1;
+    } else if (task.status === STATUSES.NOT_STARTED) {
+      taskTypeStats[taskType].notCompleted += 1;
+    }
+  });
+
+  let bestTaskType = "";
+  let worstTaskType = "";
+  let highestSuccessRate = -1;
+  let lowestSuccessRate = 101;
+
+  for (const taskType in taskTypeStats) {
+    const stats = taskTypeStats[taskType];
+    const successRate = (stats.completed / stats.total) * 100;
+    if (successRate > highestSuccessRate) {
+      highestSuccessRate = successRate;
+      bestTaskType = taskType;
+    }
+    if (successRate < lowestSuccessRate) {
+      lowestSuccessRate = successRate;
+      worstTaskType = taskType;
+    }
+  }
+
+  return {
+    bestTaskType,
+    worstTaskType,
+    taskTypeStats,
+  };
+};
 
 const PatientInfo = () => {
   const { id } = useParams();
@@ -38,23 +84,25 @@ const PatientInfo = () => {
   };
   const patient = patients?.data;
   const openTasksCount = patients?.data.tasks.reduce(
-    (total, task) => (task.status === "run" ? total + 1 : total),
+    (total, task) => (task.status === STATUSES.IN_PROGRESS ? total + 1 : total),
     0
   );
   const completedTasks = patients?.data.tasks.reduce(
-    (total, task) => (task.status === "completed" ? total + 1 : total),
+    (total, task) => (task.status === STATUSES.COMPLETED ? total + 1 : total),
     0
   );
   const completedRegularTasks = patients?.data.tasks.reduce(
     (total, task) =>
-      task.status === "completed" && task.type === "regular"
+      task.status === STATUSES.COMPLETED && task.type === "regular"
         ? total + 1
         : total,
     0
   );
   const completedBonusTasks = patients?.data.tasks.reduce(
     (total, task) =>
-      task.status === "completed" && task.type === "bonus" ? total + 1 : total,
+      task.status === STATUSES.COMPLETED && task.type === "bonus"
+        ? total + 1
+        : total,
     0
   );
   const totalRegularTasks = patients?.data.tasks.filter(
@@ -82,7 +130,8 @@ const PatientInfo = () => {
       (totalRegularTasks -
         completedRegularTasks -
         patients?.data.tasks.filter(
-          (task) => task.type === "regular" && task.status === "not-completed"
+          (task) =>
+            task.type === "regular" && task.status === STATUSES.NOT_STARTED
         ).length)) /
       totalRegularTasks >=
     0.8;
@@ -92,7 +141,8 @@ const PatientInfo = () => {
       (totalBonusTasks -
         completedBonusTasks -
         patients?.data.tasks.filter(
-          (task) => task.type === "bonus" && task.status === "not-completed"
+          (task) =>
+            task.type === "bonus" && task.status === STATUSES.NOT_STARTED
         ).length)) /
       totalBonusTasks >=
     0.2;
@@ -116,51 +166,7 @@ const PatientInfo = () => {
     openTasksCount,
   };
 
-  const analyzeTasks = (tasks) => {
-    const taskTypeStats = {};
-
-    tasks?.forEach((task) => {
-      const taskType = task.taskType;
-      if (!taskTypeStats[taskType]) {
-        taskTypeStats[taskType] = {
-          total: 0,
-          completed: 0,
-          notCompleted: 0,
-        };
-      }
-      taskTypeStats[taskType].total += 1;
-      if (task.status === "completed") {
-        taskTypeStats[taskType].completed += 1;
-      } else if (task.status === "not-completed") {
-        taskTypeStats[taskType].notCompleted += 1;
-      }
-    });
-
-    let bestTaskType = "";
-    let worstTaskType = "";
-    let highestSuccessRate = -1;
-    let lowestSuccessRate = 101;
-
-    for (const taskType in taskTypeStats) {
-      const stats = taskTypeStats[taskType];
-      const successRate = (stats.completed / stats.total) * 100;
-      if (successRate > highestSuccessRate) {
-        highestSuccessRate = successRate;
-        bestTaskType = taskType;
-      }
-      if (successRate < lowestSuccessRate) {
-        lowestSuccessRate = successRate;
-        worstTaskType = taskType;
-      }
-    }
-
-    return {
-      bestTaskType,
-      worstTaskType,
-      taskTypeStats,
-    };
-  };
-
+  console.log(patientWithCompletedTasksPercent);
   const tasksAnalysis = analyzeTasks(patients?.data.tasks);
   console.log(tasksAnalysis);
 
@@ -329,7 +335,7 @@ const PatientInfo = () => {
         </Grid>
 
         {/* child notifications */}
-        <Grid item>
+        {/* <Grid item>
           <Card
             sx={{
               width: 400,
@@ -350,7 +356,7 @@ const PatientInfo = () => {
               </Typography>
             </CardContent>
           </Card>
-        </Grid>
+        </Grid> */}
       </Grid>
 
       <Box
