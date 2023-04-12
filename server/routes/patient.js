@@ -10,6 +10,7 @@ import {
   getPatientById,
   deleteTask,
   addMedication,
+  addReview,
 } from "../controllers/patient.js";
 const router = express.Router();
 
@@ -22,6 +23,7 @@ const router = express.Router();
 router.get("/", getPatientsList);
 router.get("/:id", getPatientById);
 router.post("/", addNewPatient);
+router.post("/:id/reviews", addReview);
 router.post("/:id/tasks", addTask);
 router.post("/:id/medication", addMedication);
 router.patch("/:patientId/tasks/:taskId", updateTaskStatus);

@@ -93,11 +93,6 @@ const PatientsList = () => {
         title="Patients list"
         subtitle="Managing Sheba's Children’s Psychiatric Unit"
       />
-      {/*<Box display="flex" justifyContent="end" mt="20px">*/}
-      {/*  <Button type="submit" color="secondary" variant="contained">*/}
-      {/*    Add Patient*/}
-      {/*  </Button>*/}
-      {/*</Box>*/}
 
       <Box
         m="40px 0 0 0"

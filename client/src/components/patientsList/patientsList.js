@@ -40,7 +40,7 @@ const PatientsList = () => {
   return (
     <Container fixed>
       <Box display="flex" justifyContent="space-between" alignItems="center">
-        <Header title="Patient's List" subtitle="bla bla" />
+        <Header title="Patient's List" subtitle="Managing Patient's List for the Children’s Psychiatric Uni at Sheba" />
         <CustomButton onClick={handleOpen}>Add New Patient</CustomButton>
       </Box>
       <Dialog open={open} onClose={handleClose}>

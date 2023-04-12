@@ -42,14 +42,27 @@ export const apiSlice = createApi({
       providesTags: ["patients"],
     }),
     updatePatient: builder.mutation({
-      query: (patient) => ({
-        // url: `api/patients/${patient.id}`,
-        url: `api/patients/63ab62da213b56abda1c5890`,
-        method: "PATCH",
-        body: patient,
-      }),
+      query: ({ patientId, data }) => {
+        return {
+          url: `api/patients/${patientId}`,
+          method: "PATCH",
+          body: data,
+        };
+      },
       invalidatesTags: ["patients"],
     }),
+
+    addReview: builder.mutation({
+      query: ({ patientId, data }) => {
+        return {
+          url: `api/patients/${patientId}/reviews`,
+          method: "post",
+          body: data,
+        };
+      },
+      invalidatesTags: ["patients"],
+    }),
+
     updateTaskStatus: builder.mutation({
       query: ({ patientId, taskId, status }) => ({
         url: `api/patients/${patientId}/tasks/${taskId}`,
@@ -88,4 +101,5 @@ export const {
   useGetTasksByPatientIdQuery,
   useGetPatientByIdQuery,
   useLazyGetPatientByIdQuery,
+  useAddReviewMutation,
 } = apiSlice;

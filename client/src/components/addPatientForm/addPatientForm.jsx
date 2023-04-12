@@ -1,22 +1,61 @@
-import { Box, TextField } from "@mui/material";
+import {
+  Box,
+  FormControl,
+  InputLabel,
+  OutlinedInput,
+  TextField,
+} from "@mui/material";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+
 import { Formik, useFormikContext } from "formik";
 import * as yup from "yup";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import Header from "../header/Header";
 import { useAddNewPatientMutation } from "../../features/apiSlice";
 import CustomButton from "../customButton/customButton";
+import { DIAGNOSES } from "../../data/diagnoses";
+import { useState } from "react";
 
 const AddPatientForm = (setOpen) => {
   const [addNewPatient] = useAddNewPatientMutation();
   const isNonMobile = useMediaQuery("(min-width:600px)");
+  const [diagnosis, setDiagnosis] = useState([]);
+  const [medication, setMedication] = useState([]);
+
+  const handleDiagnosesChange = (event) => {
+    const {
+      target: { value },
+    } = event;
+    setDiagnosis(
+      // On autofill we get a stringified value.
+      typeof value === "string" ? value.split(",") : value
+    );
+  };
+
+  const handleMedicineChange = (event) => {
+    const {
+      target: { value },
+    } = event;
+    setMedication(
+      // On autofill we get a stringified value.
+      typeof value === "string" ? value.split(",") : value
+    );
+  };
 
   const handleFormSubmit = (values, { resetForm, setStatus }) => {
+    console.log("handleFormSubmit", handleFormSubmit);
     try {
       console.log(values);
-      addNewPatient(values);
+      const meds = medication.map((m) => {
+        const [condition, medication] = m.split("$");
+        return { condition, medication };
+      });
+      addNewPatient({ ...values, diagnosis, medication: meds });
       resetForm();
       setStatus({ success: true });
     } catch (error) {
+      console.log(error);
       // Handle form submission error here
     }
   };
@@ -122,6 +161,54 @@ const AddPatientForm = (setOpen) => {
                 sx={{ gridColumn: "span 4" }}
               />
             </Box>
+            <FormControl fullWidth sx={{ marginTop: "20px" }}>
+              <InputLabel id="demo-multiple-name-label">Diagnoses</InputLabel>
+              <Select
+                fullWidth
+                variant="filled"
+                labelId="demo-multiple-name-label"
+                id="diagnosis"
+                multiple
+                value={diagnosis}
+                onChange={handleDiagnosesChange}
+                sx={{ gridColumn: "span 4" }}
+                input={<OutlinedInput label="Name" />}
+              >
+                {Object.keys(DIAGNOSES).map((name) => (
+                  <MenuItem key={name} value={name}>
+                    {name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth sx={{ marginTop: "20px" }}>
+              <InputLabel id="demo-multiple-name-label">Medications</InputLabel>
+              <Select
+                fullWidth
+                variant="filled"
+                labelId="demo-multiple-name-label"
+                id="medications"
+                multiple
+                value={medication}
+                disabled={diagnosis.length === 0}
+                onChange={handleMedicineChange}
+                sx={{ gridColumn: "span 4" }}
+                input={<OutlinedInput label="Name" />}
+              >
+                {Object.entries(DIAGNOSES)
+                  .filter(([diagnosisName]) =>
+                    diagnosis.includes(diagnosisName)
+                  )
+                  .flatMap(([diagnosisName, { medications }]) => {
+                    console.log({ medication });
+                    return medications.map((m, i) => (
+                      <MenuItem key={m + i} value={diagnosisName + "$" + m}>
+                        {diagnosisName}: {m}
+                      </MenuItem>
+                    ));
+                  })}
+              </Select>
+            </FormControl>
             <Box display="flex" justifyContent="center" mt="20px">
               <CustomButton type="submit">Create New User</CustomButton>
             </Box>

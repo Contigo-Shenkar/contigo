@@ -3,14 +3,24 @@ import { useParams } from "react-router-dom";
 import {
   useDeletePatientTaskMutation,
   useGetPatientByIdQuery,
+  useUpdatePatientMutation,
   useUpdateTaskStatusMutation,
 } from "../../features/apiSlice";
 import { useAddNewPatientTaskMutation } from "../../features/apiSlice";
 import { tokens } from "../../theme";
 import DoneIcon from "@mui/icons-material/Done";
 import { DataGrid } from "@mui/x-data-grid";
+import StatBox from "../../components/statBox/StatBox";
+
+// import icons
+import TodayIcon from "@mui/icons-material/Today";
+import TokenIcon from "@mui/icons-material/Token";
 import BackspaceIcon from "@mui/icons-material/Backspace";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import DateRangeIcon from "@mui/icons-material/DateRange";
+import { Card, CardContent, CardHeader, LinearProgress } from "@mui/material";
+
 import {
   Box,
   Button,
@@ -31,15 +41,12 @@ import {
   Autocomplete,
   TextField,
 } from "@mui/material";
+
 import Header from "../header/Header";
 import { getRandomAvatar } from "../../data/avatars";
 import { STATUSES, regularTasks, taskCategories } from "./tasks";
-
-const taskOptions = [
-  { value: "sing", label: "Sing" },
-  { value: "dance", label: "Dance" },
-  { value: "fly", label: "Fly" },
-];
+import { analyzeTasksCompletion } from "../../helpers/analyze-tasks";
+import { toast } from "react-toastify";
 
 const gridColumns = [
   {
@@ -56,29 +63,29 @@ const gridColumns = [
   },
   {
     field: "taskStatus",
-    headerName: "status",
-    flex: 0.9,
+    headerName: "Status",
+    flex: 0.5,
     headerAlign: "center",
     align: "center",
   },
   {
     field: "tokenType",
     headerName: "Token Type",
-    flex: 0.9,
+    flex: 0.5,
     headerAlign: "center",
     align: "center",
   },
   {
     field: "createdAt",
-    headerName: "Created At",
-    flex: 0.7,
+    headerName: "Created Date",
+    flex: 0.5,
     headerAlign: "center",
     align: "center",
   },
   {
     field: "completedAt",
-    headerName: "Task completed At",
-    flex: 0.7,
+    headerName: "Date Completed",
+    flex: 0.5,
     headerAlign: "center",
     align: "center",
   },
@@ -86,7 +93,7 @@ const gridColumns = [
     field: "tokens",
     headerName: "Tokens",
     type: "number",
-    flex: 0.9,
+    flex: 0.5,
     headerAlign: "center",
     align: "center",
   },
@@ -104,12 +111,12 @@ const PatientTasks = () => {
   const [addNewPatientTask] = useAddNewPatientTaskMutation();
   const [deletePatientTask] = useDeletePatientTaskMutation();
   const [updateTaskStatus] = useUpdateTaskStatusMutation();
-  const {
-    data: patient,
-    isLoading,
-    isError,
-  } = useGetPatientByIdQuery({ id: patientId });
+  const [updatePatient] = useUpdatePatientMutation();
+  const { data, isLoading, isError } = useGetPatientByIdQuery({
+    id: patientId,
+  });
   const colors = tokens(theme.palette.mode);
+  const patient = data?.data;
 
   const handleClickOpen = () => {
     setIsAddTaskOpen(true);
@@ -143,29 +150,34 @@ const PatientTasks = () => {
       taskId,
       status,
     });
+    if (status === STATUSES.COMPLETED) {
+      const updatedPatient = {
+        ...patient,
+        tasks: patient.tasks.map((task) => {
+          if (task._id === taskId) {
+            return { ...task, status: STATUSES.COMPLETED };
+          }
+          return task;
+        }),
+      };
+      const [analysis] = analyzeTasksCompletion([updatedPatient]);
+      if (analysis.isSuccessful) {
+        const nextStage = patient.stage + 1;
+        toast.success(`Patient has moved to next stage (${nextStage})!`);
+        await updatePatient({ patientId, data: { stage: nextStage } });
+      }
+    }
   };
 
   const actionsCell = {
     field: "actions",
     headerName: "Actions",
-    flex: 0.9,
+    flex: 0.5,
     headerAlign: "center",
     align: "center",
     renderCell: (params) => {
-      console.log(params.row);
       return (
         <Box sx={{ display: "flex", gap: "10px" }}>
-          <Tooltip title="Mark as Not Started" placement="top">
-            <IconButton
-              edge="end"
-              aria-label="tasks"
-              onClick={() =>
-                handleUpdateTaskStatus(params.row.id, STATUSES.NOT_STARTED)
-              }
-            >
-              <BackspaceIcon style={{ width: "24px", height: "24px" }} />
-            </IconButton>
-          </Tooltip>
           <Tooltip title="Mark as In Progress" placement="top">
             <IconButton
               edge="end"
@@ -200,7 +212,7 @@ const PatientTasks = () => {
   if (isError) {
     return <div>Error fetching tasks</div>;
   }
-  const tasks = patient.data.tasks.map((task) => {
+  const tasks = patient.tasks.map((task) => {
     return {
       taskName: task.task,
       taskType: task.taskType,
@@ -225,7 +237,7 @@ const PatientTasks = () => {
             value={taskIdToDelete}
             onChange={(e) => setTaskIdToDelete(e.target.value)}
           >
-            {patient.data.tasks.map((task) => (
+            {patient.tasks.map((task) => (
               <MenuItem key={task._id} value={task._id}>
                 {task.task}
               </MenuItem>
@@ -296,14 +308,11 @@ const PatientTasks = () => {
             value={taskType}
             onChange={(e) => setTaskType(e.target.value)}
           >
-            <MenuItem value="ADHD">ADHD</MenuItem>
-            <MenuItem value="ACD">ACD</MenuItem>
-            <MenuItem value="ODD">ODD</MenuItem>
-            <MenuItem value="anorexia">anorexia</MenuItem>
-            <MenuItem value="intellectual disability">
-              intellectual disability
-            </MenuItem>
-            <MenuItem value="conduct disorder">conduct disorder</MenuItem>
+            {patient.diagnosis.map((diagnosis) => (
+              <MenuItem key={diagnosis} value={diagnosis}>
+                {diagnosis}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
       </DialogContent>
@@ -326,6 +335,7 @@ const PatientTasks = () => {
       </DialogActions>
     </Dialog>
   );
+
   return (
     <Container maxWidth="m" sx={{ padding: "0 40px" }}>
       <Grid
@@ -338,15 +348,19 @@ const PatientTasks = () => {
           <Avatar
             src={getRandomAvatar()}
             sx={{
-              height: 50,
+              height: 60,
               mr: 2,
-              width: 50,
+              width: 60,
             }}
           />
         </Grid>
 
         <Grid item flex={1}>
-          <Header title="Tasks" subtitle="View tasks and tokens" mb={0} />
+          <Header
+            title="Tokens Based on Tasks"
+            subtitle="Managing Token's based on tasks and tokens"
+            mb={0}
+          />
         </Grid>
         <Grid item>
           <Button
@@ -382,9 +396,9 @@ const PatientTasks = () => {
         </Grid>
       </Grid>
 
+      {/* Table tokens based on tasks */}
       <Box
         m="40px 0 0 0"
-        p="0 40px"
         height="60vh"
         sx={{
           "& .MuiDataGrid-root": {
@@ -419,6 +433,80 @@ const PatientTasks = () => {
           key={(row) => row.id}
           columns={[...gridColumns, actionsCell]}
         />
+        {/* Total tokens calculation 
+        {/* Headline */}
+        <Grid item flex={1}>
+          <Header
+            title="Check Your Total Tokens"
+            subtitle="View your total token's based per a day,week,month"
+            mb={3}
+          />
+        </Grid>
+        <Grid item></Grid>
+
+        {/* Sum of one day */}
+        <Box display="flex" flexDirection="row" justifyContent="space-between">
+          <Box
+            width="400px"
+            height="400px"
+            backgroundColor={colors.primary[400]}
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <StatBox
+              title="Total token per a Day"
+              subtitle="Choose Date:"
+              progress="0.75"
+              increase="+14%"
+              icon={
+                <TodayIcon
+                  sx={{ color: colors.greenAccent[600], fontSize: "30px" }}
+                />
+              }
+            />
+          </Box>
+          <Box
+            width="400px"
+            height="400px"
+            backgroundColor={colors.primary[400]}
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <StatBox
+              title="Total tokens per a Week"
+              subtitle="Choose Date:"
+              progress="0.50"
+              increase="+21%"
+              icon={
+                <DateRangeIcon
+                  sx={{ color: colors.greenAccent[600], fontSize: "30px" }}
+                />
+              }
+            />
+          </Box>
+          <Box
+            width="400px"
+            height="400px"
+            backgroundColor={colors.primary[400]}
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <StatBox
+              title="Total token per a Month"
+              subtitle="Choose Date:"
+              progress="0.90"
+              increase="+9%"
+              icon={
+                <CalendarMonthIcon
+                  sx={{ color: colors.greenAccent[600], fontSize: "30px" }}
+                />
+              }
+            />
+          </Box>
+        </Box>
       </Box>
     </Container>
   );

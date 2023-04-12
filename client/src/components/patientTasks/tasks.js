@@ -1,5 +1,4 @@
 export const STATUSES = {
-  NOT_STARTED: "Not Started",
   IN_PROGRESS: "In Progress",
   COMPLETED: "Completed",
 };
@@ -31,8 +30,8 @@ export const taskCategories = {
     "Perseverance",
   ],
   "Sensory Activities": [
-    "finger painting",
-    "sensory bin",
+    "Finger painting",
+    "Sensory bin",
     "water play",
     "Bubble wrap popping",
     "Kinetic sand",

@@ -6,21 +6,22 @@ import Topbar from "./components/global/topBar";
 import Sidebar from "./components/global/sideBar";
 import Dashboard from "./scenes/dashboard/index";
 import PatientsList from "./components/patientsList/patientsList";
-import TokensCalculation from "./components/tokensCalculationTable/tokensCalculation";
+import TokensCalculation from "./components/tokensCalculation/tokensCalculation";
 import Invoices from "./scenes/invoices";
 import LoginForm from "./components/login/loginForm";
 import Form from "./scenes/form";
 import PatientTasks from "./components/patientTasks/patientTasks";
-import Prediction from "./components/prediction/prediction";
 import PrivateRoute from "./components/privateRoute/PrivateRoute";
-import PatientInfo from "./components/patientInfo/patientInfo";
+import { PatientPage } from "./components/patientPage/patientPage";
 import AlertNotification from "./components/alert/alertNotification";
 import ChildCalendar from "./scenes/calendar/index";
-import BarChart from "./components/barChart/BarChart";
+import { BarChart } from "./components/barChart/BarChart";
 import PieChart from "./components/pieChart/pieChart";
 import LineChart from "./components/lineChart/lineChart";
 import ProgressCircle from "./components/progressCircle/ProgressCircle";
 import StatBox from "./components/statBox/StatBox";
+import { ToastContainer } from "react-toastify";
+import { Prediction } from "./components/patientPage/prediction/prediction";
 
 const App = () => {
   const [theme, colorMode] = useMode();
@@ -39,6 +40,7 @@ const App = () => {
           <main className="content">
             <Topbar />
             <Routes>
+              <Route path="/" element={<LoginForm />} />
               <Route path="/login" element={<LoginForm />} />
               <Route
                 path="/predict"
@@ -109,7 +111,7 @@ const App = () => {
                 path="/patients/:id"
                 element={
                   <PrivateRoute>
-                    <PatientInfo />
+                    <PatientPage />
                   </PrivateRoute>
                 }
               />
@@ -151,6 +153,21 @@ const App = () => {
             </Routes>
           </main>
         </div>
+        <ToastContainer
+          position="top-right"
+          closeOnClick={true}
+          pauseOnHover={false}
+          pauseOnFocusLoss={false}
+          autoClose={5000}
+          draggable={true}
+          closeButton={<p>Close</p>}
+          icon={{
+            success: <i className="fas fa-check-circle"></i>,
+            warning: "⚠️",
+            error: "❌",
+            default: "ℹ️",
+          }}
+        />
       </ThemeProvider>
     </ColorModeContext.Provider>
   );

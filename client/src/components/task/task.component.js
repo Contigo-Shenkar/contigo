@@ -50,11 +50,11 @@ const Task = ({ patientTask, refetchTasks }) => {
     }
   };
   const handleIncomplete = async () => {
-    if (patientTask.status !== STATUSES.NOT_STARTED) {
+    if (patientTask.status !== STATUSES.IN_PROGRESS) {
       await updateTaskStatus({
         patientId: id,
         taskId: patientTask._id,
-        status: STATUSES.NOT_STARTED,
+        status: STATUSES.IN_PROGRESS,
       });
       refetchTasks();
     }
@@ -90,7 +90,7 @@ const Task = ({ patientTask, refetchTasks }) => {
               color={
                 patientTask.status === STATUSES.COMPLETED
                   ? colors.greenAccent[500]
-                  : patientTask.status === STATUSES.NOT_STARTED
+                  : patientTask.status === STATUSES.IN_PROGRESS
                   ? colors.redAccent[500]
                   : colors.primary[100]
               }

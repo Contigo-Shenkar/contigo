@@ -9,7 +9,7 @@ import TokenIcon from "@mui/icons-material/Token";
 import VaccinesIcon from "@mui/icons-material/Vaccines";
 //import charts for dashboard
 import ProgressCircle from "../../components/progressCircle/ProgressCircle";
-import BarChart from "../../components/barChart/BarChart";
+import { BarChart } from "../../components/barChart/BarChart";
 import LineChart from "../../components/lineChart/lineChart";
 import StatBox from "../../components/statBox/StatBox";
 

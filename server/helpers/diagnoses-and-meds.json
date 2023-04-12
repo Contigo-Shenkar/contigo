@@ -1,0 +1,354 @@
+[
+  {
+    "Diagnosis/Condition": "ADHD",
+    "Medication/drug name": "Ritalin",
+    "Problem/side effects": [
+      "Loss of appetite",
+      "Stomach pain",
+      "Nausea",
+      "Insomnia or trouble sleeping",
+      "Headaches",
+      "Mood changes, such as irritability or anxiety",
+      "Increased heart rate and blood pressure",
+      "Dizziness or lightheadedness",
+      "Tics or tremors",
+      "Delayed growth"
+    ]
+  },
+  {
+    "Diagnosis/Condition": "ADHD",
+    "Medication/drug name": "Concerta",
+    "Problem/side effects": [
+      "Loss of appetite",
+      "Stomach pain",
+      "Nausea",
+      "Insomnia or trouble sleeping",
+      "Headaches",
+      "Mood changes, such as irritability or anxiety",
+      "Increased heart rate and blood pressure",
+      "Dizziness or lightheadedness",
+      "Tics or tremors",
+      "Delayed growth"
+    ]
+  },
+  {
+    "Diagnosis/Condition": "ADHD",
+    "Medication/drug name": "Metadate",
+    "Problem/side effects": [
+      "Loss of appetite",
+      "Stomach pain",
+      "Nausea",
+      "Insomnia or trouble sleeping",
+      "Headaches",
+      "Mood changes, such as irritability or anxiety",
+      "Increased heart rate and blood pressure",
+      "Dizziness or lightheadedness",
+      "Tics or tremors",
+      "Delayed growth"
+    ]
+  },
+  {
+    "Diagnosis/Condition": "ADHD",
+    "Medication/drug name": "Methylin",
+    "Problem/side effects": [
+      "Loss of appetite",
+      "Stomach pain",
+      "Nausea",
+      "Insomnia or trouble sleeping",
+      "Headaches",
+      "Mood changes, such as irritability or anxiety",
+      "Increased heart rate and blood pressure",
+      "Dizziness or lightheadedness",
+      "Tics or tremors",
+      "Delayed growth"
+    ]
+  },
+  {
+    "Diagnosis/Condition": "ADHD",
+    "Medication/drug name": "Dexedrine",
+    "Problem/side effects": [
+      "Loss of appetite",
+      "Stomach pain",
+      "Nausea",
+      "Insomnia or trouble sleeping",
+      "Headaches",
+      "Mood changes, such as irritability or anxiety",
+      "Increased heart rate and blood pressure",
+      "Dizziness or lightheadedness",
+      "Tics or tremors",
+      "Delayed growth"
+    ]
+  },
+  {
+    "Diagnosis/Condition": "ADHD",
+    "Medication/drug name": "Adderall",
+    "Problem/side effects": [
+      "Loss of appetite",
+      "Stomach pain",
+      "Nausea",
+      "Insomnia or trouble sleeping",
+      "Headaches",
+      "Mood changes, such as irritability or anxiety",
+      "Increased heart rate and blood pressure",
+      "Dizziness or lightheadedness",
+      "Tics or tremors",
+      "Delayed growth"
+    ]
+  },
+  {
+    "Diagnosis/Condition": "ADHD",
+    "Medication/drug name": "Vyvanse",
+    "Problem/side effects": [
+      "Loss of appetite",
+      "Stomach pain",
+      "Nausea",
+      "Insomnia or trouble sleeping",
+      "Headaches",
+      "Mood changes, such as irritability or anxiety",
+      "Increased heart rate and blood pressure",
+      "Dizziness or lightheadedness",
+      "Tics or tremors",
+      "Delayed growth"
+    ]
+  },
+  {
+    "Diagnosis/Condition": "ADHD",
+    "Medication/drug name": "Focalin",
+    "Problem/side effects": [
+      "Loss of appetite",
+      "Stomach pain",
+      "Nausea",
+      "Insomnia or trouble sleeping",
+      "Headaches",
+      "Mood changes, such as irritability or anxiety",
+      "Increased heart rate and blood pressure",
+      "Dizziness or lightheadedness",
+      "Tics or tremors"
+    ]
+  },
+  {
+    "Diagnosis/Condition": "ASD",
+    "Medication/drug name": "Dexedrine, Dextrostat",
+    "Problem/side effects": [
+      "decreased appetite",
+      "insomnia",
+      "stomach ache",
+      "headache",
+      "nervousness",
+      "agitation",
+      "anxiety",
+      "increased heart rate",
+      "increased blood pressure"
+    ]
+  },
+  {
+    "Diagnosis/Condition": "ASD",
+    "Medication/drug name": "Adderall",
+    "Problem/side effects": [
+      "decreased appetite",
+      "insomnia",
+      "stomach ache",
+      "headache",
+      "nervousness",
+      "agitation",
+      "anxiety",
+      "increased heart rate",
+      "increased blood pressure"
+    ]
+  },
+  {
+    "Diagnosis/Condition": "ASD",
+    "Medication/drug name": "Vyvanse",
+    "Problem/side effects": [
+      "decreased appetite",
+      "insomnia",
+      "stomach ache",
+      "headache",
+      "nervousness",
+      "agitation",
+      "anxiety",
+      "increased heart rate",
+      "increased blood pressure"
+    ]
+  },
+  {
+    "Diagnosis/Condition": "ASD",
+    "Medication/drug name": "Risperidone, Quetiapine, Aripiprazole (Abilify), Olanzapine (Zyprexa)",
+    "Problem/side effects": [
+      "drowsiness",
+      "dizziness",
+      "weight gain",
+      "constipation",
+      "dry mouth",
+      "increased appetite",
+      "headache",
+      "stomach ache",
+      "tremors",
+      "blurred vision"
+    ]
+  },
+  {
+    "Diagnosis/Condition": "ASD",
+    "Medication/drug name": "Ritalin, Concerta, Metadate, Methylin",
+    "Problem/side effects": [
+      "decreased appetite",
+      "insomnia",
+      "stomach ache",
+      "headache",
+      "nervousness",
+      "agitation",
+      "anxiety",
+      "increased heart rate",
+      "increased blood pressure"
+    ]
+  },
+  {
+    "Diagnosis/Condition": "ODD",
+    "Medication/drug name": "Ritalin",
+    "Problem/side effects": [
+      "loss of appetite",
+      "stomach pain",
+      "headache",
+      "trouble sleeping",
+      "increased heart rate",
+      "increase blood pressure",
+      "nervousness",
+      "anxiety",
+      "agitation",
+      "blurry vision",
+      "dizziness",
+      "nausea",
+      "vomiting",
+      "skin rash",
+      "numbness",
+      "tingling in the fingers or toes",
+      "muscle stiffness",
+      "sweating"
+    ]
+  },
+  {
+    "Diagnosis/Condition": "ODD",
+    "Medication/drug name": "Concerta",
+    "Problem/side effects": [
+      "decreased appetite",
+      "trouble sleeping",
+      "dry mouth",
+      "weight loss",
+      "irritability",
+      "stomach pain",
+      "nausea",
+      "vomiting",
+      "dizziness",
+      "sweating",
+      "blurry vision",
+      "chest pain",
+      "rapid heartbea",
+      "fever",
+      "skin rash"
+    ]
+  },
+  {
+    "Diagnosis/Condition": "ODD",
+    "Medication/drug name": "Adderall",
+    "Problem/side effects": [
+      "decreased appetite",
+      "stomach pain",
+      "headache",
+      "trouble sleeping",
+      "dry mouth",
+      "weight loss",
+      "nervousness",
+      "anxiety",
+      "agitation",
+      "blurry vision",
+      "dizziness",
+      "fever",
+      "muscle weakness",
+      "chest pain",
+      "rapid heartbeat"
+    ]
+  },
+  {
+    "Diagnosis/Condition": "ODD",
+    "Medication/drug name": "Strattera",
+    "Problem/side effects": [
+      "decreased appetite",
+      "upset stomach",
+      "nausea",
+      "vomiting",
+      "constipation",
+      "dry mouth",
+      "headache",
+      "trouble sleeping",
+      "dizziness",
+      "tiredness",
+      "blurry vision",
+      "increased heart rate",
+      "increased blood pressure",
+      "mood swings",
+      "skin rash"
+    ]
+  },
+  {
+    "Diagnosis/Condition": "ODD",
+    "Medication/drug name": "Intuniv",
+    "Problem/side effects": [
+      "Headache",
+      "stomach pain",
+      "dizziness",
+      "drowsiness",
+      "tiredness",
+      "dry mouth",
+      "low blood pressure",
+      "slow heart rate",
+      "mood swings",
+      "skin rash"
+    ]
+  },
+  {
+    "Diagnosis/Condition": "ODD",
+    "Medication/drug name": "Kapvay",
+    "Problem/side effects": [
+      "Dizziness",
+      "Drowsiness",
+      "dry mouth",
+      "tiredness",
+      "upset stomach",
+      "low blood pressure",
+      "slow heart rate",
+      "mood swings",
+      "skin rash"
+    ]
+  },
+  {
+    "Diagnosis/Condition": "ODD",
+    "Medication/drug name": "Risperdal",
+    "Problem/side effects": [
+      "Drowsiness",
+      "Dizziness",
+      "Headache",
+      "stomach pain",
+      "weight gain",
+      "dry mouth",
+      "muscle stiffness",
+      "tremors",
+      "blurred vision",
+      "low blood pressure",
+      "seizures"
+    ]
+  },
+  {
+    "Diagnosis/Condition": "ODD",
+    "Medication/drug name": "Abilify",
+    "Problem/side effects": [
+      "Drowsiness",
+      "Dizziness",
+      "Headache",
+      "upset stomach",
+      "weight gain",
+      "tremors",
+      "muscle stiffness",
+      "low blood pressure"
+    ]
+  }
+]

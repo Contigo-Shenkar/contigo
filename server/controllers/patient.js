@@ -1,6 +1,7 @@
 import { STATUSES } from "../helpers/tasks.js";
 import patientModel from "../models/patientModel.js";
 import mongoose from "mongoose";
+import DiagnosesAndMeds from "../helpers/diagnoses-and-meds.json" assert { type: "json" };
 
 export const getPatientsList = async (req, res) => {
   try {
@@ -61,20 +62,97 @@ export const deletePatient = async (req, res) => {
   }
 };
 
-export const updatePatient = async (req, res) => {
+const medKey = "Medication/drug name";
+const diagnosisKey = "Diagnosis/Condition";
+export const addReview = async (req, res) => {
   const { id } = req.params;
-  const { name, tokens } = req.body;
+  const content = req.body.content.toLowerCase();
   try {
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res
-        .status(404)
-        .json({ message: `No patient exist with id:${id}` });
+      return res.status(404).json({ message: `Invalid id: ${id}` });
     }
-    const updatedPatient = {
-      name,
-      tokens,
-    };
-    await patientModel.findByIdAndUpdate(id, updatedPatient, { new: true });
+    const patient = await patientModel.findById(id);
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found." });
+    }
+
+    if (patient.medication?.length > 0) {
+      const relevantMedications = [];
+      for (const medication of DiagnosesAndMeds) {
+        for (const patientMed of patient.medication) {
+          if (
+            medication[medKey] === patientMed.medication &&
+            medication[diagnosisKey] === patientMed.condition
+          ) {
+            relevantMedications.push(medication);
+          }
+        }
+      }
+
+      const recognizedSymptoms = [];
+      const relevantDiagnoses = new Set();
+      const sideAffectMeds = new Set();
+      for (const medication of relevantMedications) {
+        for (const symptom of medication["Problem/side effects"]) {
+          if (content.includes(symptom.toLowerCase())) {
+            relevantDiagnoses.add(medication[diagnosisKey]);
+            sideAffectMeds.add(medication[medKey]);
+            recognizedSymptoms.push({
+              diagnosis: medication[diagnosisKey],
+              symptom,
+              med: medication[medKey],
+            });
+          }
+        }
+      }
+
+      if (!patient.reviews) {
+        patient.reviews = [];
+      }
+      patient.reviews.push({ content, recognizedSymptoms });
+
+      const alternativeMedications = DiagnosesAndMeds.filter(
+        (med) =>
+          relevantDiagnoses.has(med[diagnosisKey]) &&
+          !sideAffectMeds.has(med[medKey])
+      );
+      await patient.save();
+      return res.json({ alternativeMedications, recognizedSymptoms });
+    }
+
+    patient.reviews.push({ content });
+    await patient.save();
+    res.json(patient);
+  } catch (error) {
+    console.log("error", error);
+    res.status(404).json({ message: "Something went wrong" });
+  }
+};
+
+export const updatePatient = async (req, res) => {
+  const { id } = req.params;
+  const { name, tokens, stage } = req.body;
+  try {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(404).json({ message: `Invalid id: ${id}` });
+    }
+    const update = { name, tokens, stage };
+    const patient = await patientModel.findById(id);
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found." });
+    }
+
+    if (patient.stage < stage) {
+      patient.stage = stage;
+      patient.tasks = patient.tasks.filter(
+        (task) => task.status !== STATUSES.COMPLETED
+      );
+      await patient.save();
+      return res.status(200).json({ data: patient });
+    }
+    const updatedPatient = await patientModel.findByIdAndUpdate(id, update, {
+      new: true,
+    });
     res.json(updatedPatient);
   } catch (error) {
     res.status(404).json({ message: "Something went wrong" });
