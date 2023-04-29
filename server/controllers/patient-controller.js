@@ -67,6 +67,7 @@ const diagnosisKey = "Diagnosis/Condition";
 export const addReview = async (req, res) => {
   const { id } = req.params;
   const content = req.body.content.toLowerCase();
+
   try {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(404).json({ message: `Invalid id: ${id}` });
@@ -77,7 +78,9 @@ export const addReview = async (req, res) => {
     }
 
     if (patient.medication?.length > 0) {
+      // meds prescribed to patient
       const relevantMedications = [];
+
       for (const medication of DiagnosesAndMeds) {
         for (const patientMed of patient.medication) {
           if (
@@ -91,6 +94,8 @@ export const addReview = async (req, res) => {
 
       const recognizedSymptoms = [];
       const relevantDiagnoses = new Set();
+
+      // current meds with side effects
       const sideAffectMeds = new Set();
       for (const medication of relevantMedications) {
         for (const symptom of medication["Problem/side effects"]) {
@@ -131,7 +136,7 @@ export const addReview = async (req, res) => {
 
 export const updatePatient = async (req, res) => {
   const { id } = req.params;
-  const { name, tokens, stage } = req.body;
+  const { name, tokens, stage, type, medication } = req.body;
   try {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(404).json({ message: `Invalid id: ${id}` });
@@ -144,18 +149,27 @@ export const updatePatient = async (req, res) => {
 
     if (patient.stage < stage) {
       patient.stage = stage;
-      patient.tasks = patient.tasks.filter(
-        (task) => task.status !== STATUSES.COMPLETED
-      );
+      patient.tasks = patient.forEach((task) => {
+        task.hidden = true;
+      });
       await patient.save();
       return res.status(200).json({ data: patient });
     }
+
+    if (type === "replace-med") {
+      console.log("medication", medication);
+      patient.medication = medication;
+      await patient.save();
+      return res.status(200).json({ data: patient });
+    }
+
     const updatedPatient = await patientModel.findByIdAndUpdate(id, update, {
       new: true,
     });
     res.json(updatedPatient);
   } catch (error) {
-    res.status(404).json({ message: "Something went wrong" });
+    console.log("error", error);
+    res.status(500).json({ message: "Something went wrong" });
   }
 };
 export const addTask = async (req, res) => {

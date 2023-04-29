@@ -11,7 +11,7 @@ import {
   deleteTask,
   addMedication,
   addReview,
-} from "../controllers/patient.js";
+} from "../controllers/patient-controller.js";
 const router = express.Router();
 
 // localhost:3001/api/patients

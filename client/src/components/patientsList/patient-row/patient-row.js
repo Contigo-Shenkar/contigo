@@ -14,7 +14,6 @@ import { Box } from "@mui/system";
 import { tokens } from "../../../theme";
 import { Link } from "react-router-dom";
 import { useDeletePatientMutation } from "../../../features/apiSlice";
-import { getRandomAvatar } from "../../../data/avatars";
 
 const PatientRow = ({ patient }) => {
   const theme = useTheme();
@@ -37,7 +36,7 @@ const PatientRow = ({ patient }) => {
           }}
         >
           <Avatar
-            src={getRandomAvatar()}
+            src={patient.imageUrl || "/assets/avatars/avatar-placeholder.png"}
             sx={{
               height: 50,
               mr: 2,

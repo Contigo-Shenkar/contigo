@@ -6,10 +6,9 @@ import Topbar from "./components/global/topBar";
 import Sidebar from "./components/global/sideBar";
 import Dashboard from "./scenes/dashboard/index";
 import PatientsList from "./components/patientsList/patientsList";
-import TokensCalculation from "./components/tokensCalculation/tokensCalculation";
+import TasksMonitoring from "./components/task-monitoring/task-monitoring";
 import Invoices from "./scenes/invoices";
 import LoginForm from "./components/login/loginForm";
-import Form from "./scenes/form";
 import PatientTasks from "./components/patientTasks/patientTasks";
 import PrivateRoute from "./components/privateRoute/PrivateRoute";
 import { PatientPage } from "./components/patientPage/patientPage";
@@ -21,7 +20,7 @@ import LineChart from "./components/lineChart/lineChart";
 import ProgressCircle from "./components/progressCircle/ProgressCircle";
 import StatBox from "./components/statBox/StatBox";
 import { ToastContainer } from "react-toastify";
-import { Prediction } from "./components/patientPage/prediction/prediction";
+import { PatientMeds } from "./components/patientPage/patient-meds/patient-meds";
 
 const App = () => {
   const [theme, colorMode] = useMode();
@@ -46,7 +45,7 @@ const App = () => {
                 path="/predict"
                 element={
                   <PrivateRoute>
-                    <Prediction />
+                    <PatientMeds />
                   </PrivateRoute>
                 }
               />
@@ -86,7 +85,7 @@ const App = () => {
                 path="/tokensCalculation"
                 element={
                   <PrivateRoute>
-                    <TokensCalculation />
+                    <TasksMonitoring />
                   </PrivateRoute>
                 }
               />
@@ -95,14 +94,6 @@ const App = () => {
                 element={
                   <PrivateRoute>
                     <Invoices />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/form"
-                element={
-                  <PrivateRoute>
-                    <Form />
                   </PrivateRoute>
                 }
               />

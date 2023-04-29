@@ -4,6 +4,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import patientRouter from "./routes/patient.js";
 import userRouter from "./routes/user.js";
+import medsRouters from "./routes/meds.js";
 import taskBankRouter from "./routes/taskBank.js";
 const app = express();
 const port = process.env.PORT || 3001;
@@ -12,10 +13,10 @@ dotenv.config();
 app.use(express.json());
 app.use(cors());
 
-
 // localhost:3001/api/patients
 app.use("/api/patients", patientRouter);
 app.use("/api/users", userRouter);
+app.use("/api/medications", medsRouters);
 app.use("/api/taskBank", taskBankRouter);
 
 mongoose

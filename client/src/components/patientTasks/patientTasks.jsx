@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   useDeletePatientTaskMutation,
@@ -14,12 +14,9 @@ import StatBox from "../../components/statBox/StatBox";
 
 // import icons
 import TodayIcon from "@mui/icons-material/Today";
-import TokenIcon from "@mui/icons-material/Token";
-import BackspaceIcon from "@mui/icons-material/Backspace";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import DateRangeIcon from "@mui/icons-material/DateRange";
-import { Card, CardContent, CardHeader, LinearProgress } from "@mui/material";
 
 import {
   Box,
@@ -40,64 +37,16 @@ import {
   IconButton,
   Autocomplete,
   TextField,
+  InputLabel,
 } from "@mui/material";
 
 import Header from "../header/Header";
-import { getRandomAvatar } from "../../data/avatars";
 import { STATUSES, regularTasks, taskCategories } from "./tasks";
 import { analyzeTasksCompletion } from "../../helpers/analyze-tasks";
 import { toast } from "react-toastify";
+import DateRangePicker from "./date-range-picker";
 
-const gridColumns = [
-  {
-    field: "taskName",
-    headerName: "Task Name",
-    flex: 0.9,
-    cellClassName: "name-column--cell",
-  },
-  {
-    field: "taskType",
-    headerName: "Task type",
-    flex: 0.4,
-    cellClassName: "name-column--cell",
-  },
-  {
-    field: "taskStatus",
-    headerName: "Status",
-    flex: 0.5,
-    headerAlign: "center",
-    align: "center",
-  },
-  {
-    field: "tokenType",
-    headerName: "Token Type",
-    flex: 0.5,
-    headerAlign: "center",
-    align: "center",
-  },
-  {
-    field: "createdAt",
-    headerName: "Created Date",
-    flex: 0.5,
-    headerAlign: "center",
-    align: "center",
-  },
-  {
-    field: "completedAt",
-    headerName: "Date Completed",
-    flex: 0.5,
-    headerAlign: "center",
-    align: "center",
-  },
-  {
-    field: "tokens",
-    headerName: "Tokens",
-    type: "number",
-    flex: 0.5,
-    headerAlign: "center",
-    align: "center",
-  },
-];
+const ALL_STATUSES = "all-statuses";
 
 const PatientTasks = () => {
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
@@ -106,6 +55,9 @@ const PatientTasks = () => {
   const [taskIdToDelete, setTaskIdToDelete] = useState("");
   const [taskCategory, setTaskCategory] = useState("");
   const [taskType, setTaskType] = useState("ADHD");
+  const [stages, setStages] = useState("all-stages");
+  const [status, setStatus] = useState(ALL_STATUSES);
+  const [dateRange, setDateRange] = useState([null, null]);
   const theme = useTheme();
   const { id: patientId } = useParams();
   const [addNewPatientTask] = useAddNewPatientTaskMutation();
@@ -117,6 +69,32 @@ const PatientTasks = () => {
   });
   const colors = tokens(theme.palette.mode);
   const patient = data?.data;
+  const filteredStageTasks = useMemo(() => {
+    if (!patient?.tasks) return [];
+    let tasks = [...patient?.tasks];
+    console.log("tasks", tasks);
+
+    if (stages === "this-stage") {
+      tasks = tasks.filter((task) => task.hidden);
+    }
+    if (dateRange[0]) {
+      tasks = tasks.filter(
+        (task) => new Date(task.createdAt).setHours(0, 0, 0, 0) >= dateRange[0]
+      );
+    }
+    if (dateRange[1]) {
+      tasks = tasks.filter(
+        (task) => new Date(task.createdAt).setHours(0, 0, 0, 0) <= dateRange[1]
+      );
+    }
+    if (status !== ALL_STATUSES) {
+      tasks = tasks.filter((task) => task.status === status);
+    }
+
+    tasks = tasks.sort((a, b) => a.createdAt - b.createdAt);
+
+    return tasks;
+  }, [dateRange, patient?.tasks, stages, status]);
 
   const handleClickOpen = () => {
     setIsAddTaskOpen(true);
@@ -153,7 +131,7 @@ const PatientTasks = () => {
     if (status === STATUSES.COMPLETED) {
       const updatedPatient = {
         ...patient,
-        tasks: patient.tasks.map((task) => {
+        tasks: filteredStageTasks.map((task) => {
           if (task._id === taskId) {
             return { ...task, status: STATUSES.COMPLETED };
           }
@@ -212,7 +190,7 @@ const PatientTasks = () => {
   if (isError) {
     return <div>Error fetching tasks</div>;
   }
-  const tasks = patient.tasks.map((task) => {
+  const tasks = filteredStageTasks.map((task) => {
     return {
       taskName: task.task,
       taskType: task.taskType,
@@ -237,7 +215,7 @@ const PatientTasks = () => {
             value={taskIdToDelete}
             onChange={(e) => setTaskIdToDelete(e.target.value)}
           >
-            {patient.tasks.map((task) => (
+            {filteredStageTasks.map((task) => (
               <MenuItem key={task._id} value={task._id}>
                 {task.task}
               </MenuItem>
@@ -346,7 +324,7 @@ const PatientTasks = () => {
       >
         <Grid item>
           <Avatar
-            src={getRandomAvatar()}
+            src={patient.imageUrl || "/assets/avatars/avatar-placeholder.png"}
             sx={{
               height: 60,
               mr: 2,
@@ -395,6 +373,35 @@ const PatientTasks = () => {
           {DeleteTaskDialog}
         </Grid>
       </Grid>
+
+      <Box display="flex" m="20px 20px" gap="20px">
+        <Box sx={{ display: "flex", flexDirection: "column" }}>
+          <InputLabel htmlFor="from-date">From</InputLabel>
+          <Select
+            labelId="task-type-select-label"
+            id="task-type-select"
+            value={stages}
+            onChange={(e) => setStages(e.target.value)}
+          >
+            <MenuItem value="all-stages">All Stages</MenuItem>
+            <MenuItem value="this-stage">This Stage</MenuItem>
+          </Select>
+        </Box>
+        <Box sx={{ display: "flex", flexDirection: "column" }}>
+          <InputLabel htmlFor="from-date">Status</InputLabel>
+          <Select
+            labelId="task-type-select-label"
+            id="task-type-select"
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+          >
+            <MenuItem value={ALL_STATUSES}>All Statuses</MenuItem>
+            <MenuItem value={STATUSES.COMPLETED}>Completed</MenuItem>
+            <MenuItem value={STATUSES.IN_PROGRESS}>In Progress</MenuItem>
+          </Select>
+        </Box>
+        <DateRangePicker setDateRange={setDateRange} />
+      </Box>
 
       {/* Table tokens based on tasks */}
       <Box
@@ -513,3 +520,54 @@ const PatientTasks = () => {
 };
 
 export default PatientTasks;
+
+const gridColumns = [
+  {
+    field: "taskName",
+    headerName: "Task Name",
+    flex: 0.9,
+    cellClassName: "name-column--cell",
+  },
+  {
+    field: "taskType",
+    headerName: "Task type",
+    flex: 0.4,
+    cellClassName: "name-column--cell",
+  },
+  {
+    field: "taskStatus",
+    headerName: "Status",
+    flex: 0.5,
+    headerAlign: "center",
+    align: "center",
+  },
+  {
+    field: "tokenType",
+    headerName: "Token Type",
+    flex: 0.5,
+    headerAlign: "center",
+    align: "center",
+  },
+  {
+    field: "createdAt",
+    headerName: "Created Date",
+    flex: 0.5,
+    headerAlign: "center",
+    align: "center",
+  },
+  {
+    field: "completedAt",
+    headerName: "Date Completed",
+    flex: 0.5,
+    headerAlign: "center",
+    align: "center",
+  },
+  {
+    field: "tokens",
+    headerName: "Tokens",
+    type: "number",
+    flex: 0.5,
+    headerAlign: "center",
+    align: "center",
+  },
+];

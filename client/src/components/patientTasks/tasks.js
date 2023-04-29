@@ -3,6 +3,8 @@ export const STATUSES = {
   COMPLETED: "Completed",
 };
 
+export const categoryPerActivity = new Map();
+
 export const regularTasks = "Regular Tasks";
 
 export const taskCategories = {
@@ -202,3 +204,9 @@ export const taskCategories = {
     "Celebrations",
   ],
 };
+
+for (const category of Object.keys(taskCategories)) {
+  for (const activity of taskCategories[category]) {
+    categoryPerActivity.set(activity, category);
+  }
+}

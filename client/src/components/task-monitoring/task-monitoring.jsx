@@ -3,8 +3,12 @@ import {
   FormControl,
   FormControlLabel,
   FormLabel,
+  InputLabel,
+  MenuItem,
+  OutlinedInput,
   Radio,
   RadioGroup,
+  Select,
 } from "@mui/material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
@@ -18,8 +22,11 @@ import ErrorIcon from "@mui/icons-material/Error";
 import { toast } from "react-toastify";
 import { analyzeTasksCompletion } from "../../helpers/analyze-tasks";
 
+const STAGES = 7;
+
 const TokensCalculation = () => {
   const [date, setDate] = useState("all");
+  const [stage, setStage] = useState("all");
   const { data: patients, isLoading, isError } = useGetPatientsQuery();
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -27,7 +34,8 @@ const TokensCalculation = () => {
 
   const patientsWithCompletedTasksPercent = analyzeTasksCompletion(
     patients?.data,
-    date
+    date,
+    stage
   );
 
   //////////////////////////////////////////////////
@@ -40,20 +48,22 @@ const TokensCalculation = () => {
       cellClassName: "name-column--cell",
       renderCell: (params) => {
         return (
-          <Link
-            to={`/patients/${params.row._id}`}
-            style={{ color: colors.greenAccent[300] }}
-          >
-            {params.value}
-          </Link>
+          <Box display={"flex"} alignItems={"center"} gap={1}>
+            <img
+              height={40}
+              src={params.row.imageUrl}
+              alt={params.value}
+              style={{ borderRadius: "50px" }}
+            />
+            <Link
+              to={`/patients/${params.row._id}`}
+              style={{ color: colors.greenAccent[300], textDecoration: "none" }}
+            >
+              {params.value}
+            </Link>
+          </Box>
         );
       },
-    },
-    {
-      field: "id",
-      headerName: "ID",
-      flex: 0.5,
-      align: "center",
     },
     {
       field: "completedRegularTasksPercent",
@@ -137,10 +147,10 @@ const TokensCalculation = () => {
   return (
     <Box m="20px">
       <Header
-        title="Tokens Calculation System"
+        title="Patients Tasks Monitoring"
         subtitle="Managing a tokens calculation system for the Children’s Psychiatric Unit "
       />
-      <Box display="flex" justifyContent="space-between" mt="20px">
+      <Box display="flex" mt="20px" gap="20px">
         <FormControl>
           <FormLabel id="demo-radio-buttons-group-label">Choose Date</FormLabel>
           <RadioGroup
@@ -162,6 +172,26 @@ const TokensCalculation = () => {
               label="Since admission"
             />
           </RadioGroup>
+        </FormControl>
+        <FormControl sx={{ minWidth: "100px" }}>
+          <InputLabel id="demo-multiple-name-label">Stages</InputLabel>
+          <Select
+            fullWidth
+            variant="filled"
+            labelId="demo-multiple-name-label"
+            id="diagnosis"
+            value={stage}
+            onChange={(e) => setStage(e.target.value)}
+            sx={{ gridColumn: "span 4" }}
+            input={<OutlinedInput label="Name" />}
+          >
+            <MenuItem value="all">All</MenuItem>
+            {new Array(STAGES).fill(undefined).map((_, i) => (
+              <MenuItem key={i + 1} value={i + 1}>
+                {i + 1}
+              </MenuItem>
+            ))}
+          </Select>
         </FormControl>
       </Box>
       <Box

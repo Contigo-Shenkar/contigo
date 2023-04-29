@@ -38,8 +38,19 @@ export const apiSlice = createApi({
       query: ({ id }) => ({
         url: `api/patients/${id}`,
         method: "GET",
+        transformResponse: (response) => {
+          console.log("response", response);
+          return response;
+        },
       }),
       providesTags: ["patients"],
+    }),
+
+    getAlternativeMed: builder.mutation({
+      query: ({ medication }) => ({
+        url: `api/medications/${medication}`,
+        method: "GET",
+      }),
     }),
     updatePatient: builder.mutation({
       query: ({ patientId, data }) => {
@@ -102,4 +113,5 @@ export const {
   useGetPatientByIdQuery,
   useLazyGetPatientByIdQuery,
   useAddReviewMutation,
+  useGetAlternativeMedMutation,
 } = apiSlice;

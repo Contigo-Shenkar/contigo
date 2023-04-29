@@ -1,6 +1,6 @@
 import { STATUSES } from "../components/patientTasks/tasks";
 
-export function analyzeTasksCompletion(patients, date = "all") {
+export function analyzeTasksCompletion(patients, date = "all", stage = "all") {
   const analyzePatient = (patient) => {
     let openTasksCount = 0;
     let completedTasks = 0;
@@ -11,6 +11,7 @@ export function analyzeTasksCompletion(patients, date = "all") {
     let inProgressRegularCount = 0;
     let inProgressBonusCount = 0;
     const today = new Date().toLocaleDateString();
+
     for (const task of patient.tasks) {
       if (
         date === "day" &&
@@ -92,10 +93,24 @@ export function analyzeTasksCompletion(patients, date = "all") {
       isSuccessful,
     };
   };
+
+  if (stage !== "all") {
+    patients = patients?.filter((patient) => patient.stage === stage);
+  }
+
   return patients?.map(analyzePatient);
 }
 const weekInMs = 7 * 24 * 60 * 60 * 1000;
 
 export function isPast7days(date) {
   return new Date(date).getTime() > new Date().getTime() - weekInMs;
+}
+
+export function isToday(date) {
+  const today = new Date();
+  return (
+    date.getDate() === today.getDate() &&
+    date.getMonth() === today.getMonth() &&
+    date.getFullYear() === today.getFullYear()
+  );
 }

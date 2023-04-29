@@ -16,58 +16,16 @@ import {
   Button,
   CardActions,
 } from "@mui/material";
-import { Prediction } from "./prediction/prediction";
-import { STATUSES } from "../patientTasks/tasks";
+import { PatientMeds } from "./patient-meds/patient-meds";
+import { STATUSES, categoryPerActivity } from "../patientTasks/tasks";
 import { BarChart } from "../barChart/BarChart";
 import { useMemo } from "react";
-import { getRandomAvatar } from "../../data/avatars";
-import { isPast7days } from "../../helpers/analyze-tasks";
 
-export const analyzeTasks = (tasks) => {
-  const taskTypeStats = {};
+import { isPast7days, isToday } from "../../helpers/analyze-tasks";
+import { getDayAndMonth, getPast7Days } from "../../helpers/dates";
+import PieChart from "../pieChart/pieChart";
 
-  tasks?.forEach((task) => {
-    const taskType = task.taskType;
-    if (!taskTypeStats[taskType]) {
-      taskTypeStats[taskType] = {
-        total: 0,
-        completed: 0,
-        notCompleted: 0,
-      };
-    }
-    taskTypeStats[taskType].total += 1;
-    if (task.status === STATUSES.COMPLETED) {
-      taskTypeStats[taskType].completed += 1;
-    } else if (task.status === STATUSES.IN_PROGRESS) {
-      taskTypeStats[taskType].notCompleted += 1;
-    }
-  });
-
-  let bestTaskType = "";
-  let worstTaskType = "";
-  let highestSuccessRate = -1;
-  let lowestSuccessRate = 101;
-
-  for (const taskType in taskTypeStats) {
-    const stats = taskTypeStats[taskType];
-    const successRate = (stats.completed / stats.total) * 100;
-    if (successRate > highestSuccessRate) {
-      highestSuccessRate = successRate;
-      bestTaskType = taskType;
-    }
-    if (successRate < lowestSuccessRate) {
-      lowestSuccessRate = successRate;
-      worstTaskType = taskType;
-    }
-  }
-
-  return {
-    bestTaskType,
-    worstTaskType,
-    taskTypeStats,
-  };
-};
-
+const totalTokensKeys = ["Today", "Last Week", "All Time"];
 export const PatientPage = () => {
   const { id: patientId } = useParams();
   const {
@@ -75,45 +33,78 @@ export const PatientPage = () => {
     isLoading,
     isError,
   } = useGetPatientByIdQuery({ id: patientId });
-
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-
-  console.log("patient", patient);
 
   const {
     openTasksInTheLast7Days,
     failedTasksTypes,
     completedTasksInTheLast7Days,
+    last7days,
+    completedAllTimeCount,
+    completedTodayCount,
+    pieChartData,
   } = useMemo(() => {
     if (!patient?.data.tasks) return [];
 
+    const last7days = getPast7Days();
+
+    let completedAllTimeCount = 0;
+    let completedTodayCount = 0;
     const openTasksInTheLast7Days = [];
     const completedTasksInTheLast7Days = [];
-
     const failedTasksTypes = new Set();
 
-    console.log(patient);
+    const categoryCount = {};
 
     for (const t of patient?.data.tasks) {
+      const category = categoryPerActivity.get(t.task);
+      categoryCount[category] = categoryCount[category] || 0 + 1;
+
       if (t.status === STATUSES.IN_PROGRESS && isPast7days(t.createdAt)) {
         openTasksInTheLast7Days.push(t);
         failedTasksTypes.add(t.taskType);
       } else if (t.status === STATUSES.COMPLETED) {
-        completedTasksInTheLast7Days.push(t);
+        completedAllTimeCount++;
+        if (!t.hidden) {
+          completedTasksInTheLast7Days.push(t);
+          if (isPast7days(t.completedAt)) {
+            const key = getDayAndMonth(t.completedAt);
+            last7days[key]++;
+            if (isToday(new Date(t.completedAt))) {
+              completedTodayCount++;
+            }
+          }
+        }
       }
     }
+
+    const pieChartData = [];
+    for (const [category, count] of Object.entries(categoryCount)) {
+      pieChartData.push({
+        id: category,
+        label: category,
+        value: count,
+        // color: colors[category],
+      });
+    }
+
     return {
       failedTasksTypes,
       openTasksInTheLast7Days,
       completedTasksInTheLast7Days,
+      last7days,
+      completedAllTimeCount,
+      completedTodayCount,
+      pieChartData,
     };
-  }, [patient?.data.tasks]);
+  }, [patient]);
 
   console.log({
     openTasksInTheLast7Days,
     failedTasksTypes,
     completedTasksInTheLast7Days,
+    last7days,
   });
 
   const cardStyles = {
@@ -135,13 +126,36 @@ export const PatientPage = () => {
 
   return (
     <Box m="20px">
-      {/* title */}
       <Header
         title={`${patient.data.fullName} personal information`}
         subtitle="Welcome to your personal card"
       />
-      {/* child card */}
-
+      <Box display={"flex"} sx={{ m: "15px" }}>
+        <Link
+          to={`/patients/${patientId}/tasks`}
+          style={{ color: colors.greenAccent[300] }}
+        >
+          <Button
+            sx={{ fontSize: "18px" }}
+            size="large"
+            color="secondary"
+            variant="contained"
+          >
+            View & manage patients tasks
+          </Button>
+        </Link>
+        {/* <Typography variant="h3" gutterBottom>
+          {!completedTasksInTheLast7Days.length
+            ? 0
+            : Math.floor(
+                (completedTasksInTheLast7Days.length /
+                  (completedTasksInTheLast7Days.length +
+                    openTasksInTheLast7Days.length)) *
+                  100
+              )}
+          % Last week tasks completion rate
+        </Typography> */}
+      </Box>
       <Grid
         container
         spacing={3}
@@ -161,7 +175,10 @@ export const PatientPage = () => {
             >
               <Button onClick={() => console.log("Avatar clicked!")}>
                 <Avatar
-                  src={getRandomAvatar()}
+                  src={
+                    patient.data.imageUrl ||
+                    "/assets/avatars/avatar-placeholder.png"
+                  }
                   sx={{
                     height: 80,
                     mb: 2,
@@ -170,17 +187,20 @@ export const PatientPage = () => {
                   }}
                 />
               </Button>
-              <Typography gutterBottom variant="h5" textTransform="uppercase">
+              <Typography gutterBottom variant="h3" textTransform="uppercase">
                 {patient.data.fullName}
               </Typography>
-              <Typography color="text.secondary" variant="body2">
-                {patient.data.email}
+              <Typography color="text.secondary" variant="body">
+                ID: {patient.data.id}
               </Typography>
-              <Typography color="text.secondary" variant="body2">
-                Age: {patient.data.age}
+              <Typography color="text.secondary" variant="body">
+                Diagnoses: {patient.data.diagnosis.join(", ")}
               </Typography>
-              <Typography color="text.secondary" variant="body2">
-                Phone: {patient.data.contactNumber}
+              <Typography color="text.secondary" variant="body">
+                Medications:{" "}
+                {patient.data.medication
+                  .map(({ medication }) => medication)
+                  .join(", ")}
               </Typography>
             </CardContent>
           </Card>
@@ -190,36 +210,82 @@ export const PatientPage = () => {
         <Grid item>
           <Card sx={cardStyles}>
             <CardContent>
-              <Box height="250px" mt="-20px">
-                <BarChart isDashboard={true} />
+              <Box
+                height="250px"
+                justifyContent={"center"}
+                alignItems={"center"}
+              >
+                <Typography variant="h5" align="center">
+                  Past week completed tasks
+                </Typography>
+                <Box mt="-20px" height="250px">
+                  <BarChart
+                    isDashboard={true}
+                    keys={Object.keys(last7days).reverse()}
+                    values={Object.entries(last7days)
+                      .reverse()
+                      .map(([key, value]) => ({
+                        date: key,
+                        [key]: value,
+                      }))}
+                    indexBy="date"
+                  />
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item>
+          <Card sx={cardStyles}>
+            <CardContent>
+              <Box
+                height="250px"
+                justifyContent={"center"}
+                alignItems={"center"}
+              >
+                <Typography variant="h5" align="center">
+                  Total Tokens
+                </Typography>
+                <Box mt="-20px" height="250px">
+                  <BarChart
+                    isDashboard={true}
+                    keys={totalTokensKeys}
+                    values={[
+                      { date: "All Time", "All Time": completedAllTimeCount },
+                      {
+                        date: "Last Week",
+                        "Last Week": completedTasksInTheLast7Days.length,
+                      },
+                      { date: "Today", Today: completedTodayCount },
+                    ]}
+                    indexBy="date"
+                  />
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item>
+          <Card sx={cardStyles}>
+            <CardContent>
+              <Box
+                height="250px"
+                justifyContent={"center"}
+                alignItems={"center"}
+              >
+                <Typography variant="h5" align="center">
+                  Task distribution by Category
+                </Typography>
+                <Box mt="-20px" height="250px">
+                  <PieChart data={pieChartData} />
+                </Box>
               </Box>
             </CardContent>
           </Card>
         </Grid>
       </Grid>
 
-      <Box m="40px 0 0 40px">
-        <Typography variant="h3" gutterBottom>
-          <Link
-            to={`/patients/${patientId}/tasks`}
-            style={{ color: colors.greenAccent[300] }}
-          >
-            View patients tasks
-          </Link>
-          <NavigateNextIcon />
-        </Typography>
-        <Typography variant="h3" gutterBottom>
-          {!completedTasksInTheLast7Days.length
-            ? 0
-            : Math.floor(
-                (completedTasksInTheLast7Days.length /
-                  (completedTasksInTheLast7Days.length +
-                    openTasksInTheLast7Days.length)) *
-                  100
-              )}
-          % Success rate
-        </Typography>
-      </Box>
+      <Box m="40px 0 0 40px"></Box>
 
       {openTasksInTheLast7Days.length > 0 ? (
         <Box marginBottom={4} p={3}>
@@ -239,7 +305,7 @@ export const PatientPage = () => {
           </Typography>
         </Box>
       ) : null}
-      <Prediction patient={patient.data} />
+      <PatientMeds patient={patient.data} />
     </Box>
   );
 };

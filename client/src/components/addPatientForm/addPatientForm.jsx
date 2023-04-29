@@ -150,6 +150,19 @@ const AddPatientForm = (setOpen) => {
               <TextField
                 fullWidth
                 variant="filled"
+                type="text"
+                label="Image URL"
+                onBlur={handleBlur}
+                onChange={handleChange}
+                value={values.imageUrl}
+                name="imageUrl"
+                error={!!touched.contactNumber && !!errors.contactNumber}
+                helperText={touched.contactNumber && errors.contactNumber}
+                sx={{ gridColumn: "span 4" }}
+              />
+              <TextField
+                fullWidth
+                variant="filled"
                 type="number"
                 label="Age"
                 onBlur={handleBlur}
