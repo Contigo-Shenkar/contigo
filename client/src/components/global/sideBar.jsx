@@ -142,7 +142,7 @@ const Sidebar = () => {
               setSelected={setSelected}
             />
             <Item
-              title="Tokens"
+              title="Reviews"
               to="/tokens"
               icon={<TableChartIcon />}
               selected={selected}
@@ -173,13 +173,7 @@ const Sidebar = () => {
               selected={selected}
               setSelected={setSelected}
             />
-            <Item
-              title="Home Report"
-              to="/homeReport"
-              icon={<SummarizeIcon />}
-              selected={selected}
-              setSelected={setSelected}
-            />
+            
           </Box>
         </Menu>
       </ProSidebar>
