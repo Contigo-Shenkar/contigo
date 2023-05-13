@@ -11,7 +11,7 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 } */
-@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@1,700&family=Roboto:wght@400;700&family=Shippori+Antique&family=Source+Sans+Pro:wght@400;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@1,700&family=Roboto:wght@400;700&family=Shippori+Antique&family=Source+Sans+Pro:wght@400;600;700&display=swap");
 html,
 body,
 #root,
@@ -19,29 +19,61 @@ body,
 .content {
   height: 100%;
   width: 100%;
-  font-family:'Source Sans Pro', sans-serif;
+  font-family: "Source Sans Pro", sans-serif;
 }
 .app {
   display: flex;
   position: relative;
 }
 
-::-webkit-scrollbar{
-  width: 10px ;
+::-webkit-scrollbar {
+  width: 10px;
 }
 
 /*Track*/
-::-webkit-scrollbar-track{
+::-webkit-scrollbar-track {
   background: #e0e0e0;
-
 }
 
 /*Handle*/
-::-webkit-scrollbar-thumb{
+::-webkit-scrollbar-thumb {
   background: #888;
 }
 
 /*Handle on Hover*/
 ::-webkit-scrollbar-track:hover {
   background: #555;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+input:-webkit-autofill {
+  /* Set the background color and text color for autofill in Safari and Chrome */
+  background-color: #f5f5f5 !important;
+  color: #333 !important;
+}
+
+input:-moz-autofill {
+  /* Set the background color and text color for autofill in Firefox */
+  background-color: #f5f5f5 !important;
+  color: #333 !important;
+}
+
+input:-ms-autofill {
+  /* Set the background color and text color for autofill in Microsoft Edge */
+  background-color: #f5f5f5 !important;
+  color: #333 !important;
+}
+
+input:-o-autofill {
+  /* Set the background color and text color for autofill in Opera */
+  background-color: #f5f5f5 !important;
+  color: #333 !important;
+}
+
+input:autofill {
+  /* Set the background color and text color for autofill in all other browsers */
+  background-color: #f5f5f5 !important;
+  color: #333 !important;
 }

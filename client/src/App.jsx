@@ -21,13 +21,18 @@ import ProgressCircle from "./components/progressCircle/ProgressCircle";
 import StatBox from "./components/statBox/StatBox";
 import { ToastContainer } from "react-toastify";
 import { PatientMeds } from "./components/patientPage/patient-meds/patient-meds";
+import { Register } from "./pages/register/register";
+import { Login } from "./pages/login/login";
+
+const fullPages = ["/login", "/", "/register"];
 
 const App = () => {
   const [theme, colorMode] = useMode();
   const isAuthenticated = !!localStorage.getItem("token");
   const location = useLocation();
 
-  const shouldShowSidebar = isAuthenticated && location.pathname !== "/login";
+  const isFullPage = fullPages.includes(location.pathname);
+  const shouldShowSidebar = isAuthenticated && !isFullPage;
 
   return (
     <ColorModeContext.Provider value={colorMode}>
@@ -37,10 +42,11 @@ const App = () => {
           {shouldShowSidebar && <Sidebar />}{" "}
           {/* Conditionally render Sidebar */}
           <main className="content">
-            <Topbar />
+            {isFullPage ? null : <Topbar />}
             <Routes>
-              <Route path="/" element={<LoginForm />} />
-              <Route path="/login" element={<LoginForm />} />
+              <Route path="/" element={<Login />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
               <Route
                 path="/predict"
                 element={

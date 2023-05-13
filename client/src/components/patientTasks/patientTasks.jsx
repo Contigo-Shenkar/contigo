@@ -141,8 +141,8 @@ const PatientTasks = () => {
       const [analysis] = analyzeTasksCompletion([updatedPatient]);
       if (analysis.isSuccessful) {
         const nextStage = patient.stage + 1;
-        toast.success(`Patient has moved to next stage (${nextStage})!`);
         await updatePatient({ patientId, data: { stage: nextStage } });
+        toast.success(`Patient has moved to next stage (${nextStage})!`);
       }
     }
   };

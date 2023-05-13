@@ -1,0 +1,27 @@
+.login {
+  .logo-con {
+    background-image: url("../assets/ellipse.svg");
+  }
+  .form-con {
+    :global(.ant-form-item-label label) {
+      font-weight: 600;
+      font-size: 16px;
+      margin-bottom: 0px !important;
+
+      @media (min-width: 1440px) {
+        margin-bottom: 2px !important;
+      }
+      color: white !important;
+    }
+    :global(.ant-btn span) {
+      color: white !important;
+    }
+
+    :global(.ant-form-item) {
+      @media (min-width: 1440px) {
+        margin-bottom: 16px !important;
+      }
+      margin-bottom: 10px !important;
+    }
+  }
+}

@@ -22,8 +22,14 @@ import { BarChart } from "../barChart/BarChart";
 import { useMemo } from "react";
 
 import { isPast7days, isToday } from "../../helpers/analyze-tasks";
-import { getDayAndMonth, getPast7Days } from "../../helpers/dates";
+import {
+  getDateDiffInDays,
+  getDayAndMonth,
+  getPast7Days,
+  isLastXDays,
+} from "../../helpers/dates";
 import PieChart from "../pieChart/pieChart";
+import { Insights } from "./insights/insights";
 
 const totalTokensKeys = ["Today", "Last Week", "All Time"];
 export const PatientPage = () => {
@@ -44,6 +50,9 @@ export const PatientPage = () => {
     completedAllTimeCount,
     completedTodayCount,
     pieChartData,
+    completedRegularLast3Days,
+    completedBonusLast3Days,
+    availableStageTasks,
   } = useMemo(() => {
     if (!patient?.data.tasks) return [];
 
@@ -51,6 +60,9 @@ export const PatientPage = () => {
 
     let completedAllTimeCount = 0;
     let completedTodayCount = 0;
+    let completedRegularLast3Days = 0;
+    let completedBonusLast3Days = 0;
+    const availableStageTasks = { bonus: 0, regular: 0 };
     const openTasksInTheLast7Days = [];
     const completedTasksInTheLast7Days = [];
     const failedTasksTypes = new Set();
@@ -66,16 +78,30 @@ export const PatientPage = () => {
         failedTasksTypes.add(t.taskType);
       } else if (t.status === STATUSES.COMPLETED) {
         completedAllTimeCount++;
+
         if (!t.hidden) {
           completedTasksInTheLast7Days.push(t);
           if (isPast7days(t.completedAt)) {
             const key = getDayAndMonth(t.completedAt);
             last7days[key]++;
-            if (isToday(new Date(t.completedAt))) {
-              completedTodayCount++;
+
+            if (isLastXDays(t.completedAt, 3)) {
+              if (t.tokenType === "bonus") {
+                completedBonusLast3Days++;
+              } else {
+                completedRegularLast3Days++;
+              }
+
+              if (isToday(new Date(t.completedAt))) {
+                completedTodayCount++;
+              }
             }
           }
         }
+      }
+
+      if (!t.hidden) {
+        availableStageTasks[t.tokenType]++;
       }
     }
 
@@ -97,15 +123,11 @@ export const PatientPage = () => {
       completedAllTimeCount,
       completedTodayCount,
       pieChartData,
+      completedRegularLast3Days,
+      completedBonusLast3Days,
+      availableStageTasks,
     };
   }, [patient]);
-
-  console.log({
-    openTasksInTheLast7Days,
-    failedTasksTypes,
-    completedTasksInTheLast7Days,
-    last7days,
-  });
 
   const cardStyles = {
     width: 400,
@@ -144,17 +166,6 @@ export const PatientPage = () => {
             View & manage patients tasks
           </Button>
         </Link>
-        {/* <Typography variant="h3" gutterBottom>
-          {!completedTasksInTheLast7Days.length
-            ? 0
-            : Math.floor(
-                (completedTasksInTheLast7Days.length /
-                  (completedTasksInTheLast7Days.length +
-                    openTasksInTheLast7Days.length)) *
-                  100
-              )}
-          % Last week tasks completion rate
-        </Typography> */}
       </Box>
       <Grid
         container
@@ -171,9 +182,11 @@ export const PatientPage = () => {
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
+                pt: 0,
+                textAlign: "center",
               }}
             >
-              <Button onClick={() => console.log("Avatar clicked!")}>
+              <Button>
                 <Avatar
                   src={
                     patient.data.imageUrl ||
@@ -204,8 +217,6 @@ export const PatientPage = () => {
               </Typography>
             </CardContent>
           </Card>
-
-          {/* child graph */}
         </Grid>
         <Grid item>
           <Card sx={cardStyles}>
@@ -305,6 +316,18 @@ export const PatientPage = () => {
           </Typography>
         </Box>
       ) : null}
+      <Insights
+        insights={{
+          completedBonusLast3Days,
+          completedRegularLast3Days,
+          availableStageTasks,
+          daysAtStage: getDateDiffInDays(
+            new Date(patient.data.stageStartDate).getTime(),
+            Date.now()
+          ),
+          stage: patient.data.stage,
+        }}
+      />
       <PatientMeds patient={patient.data} />
     </Box>
   );
