@@ -2,6 +2,7 @@ import express from "express";
 import {
   getPatientsList,
   addNewPatient,
+  getPatientByIdMinimal,
   updatePatient,
   deletePatient,
   addTask,
@@ -26,6 +27,7 @@ router.post("/", addNewPatient);
 router.post("/:id/reviews", addReview);
 router.post("/:id/tasks", addTask);
 router.post("/:id/medication", addMedication);
+router.get("/minimal/:id", getPatientByIdMinimal);
 router.patch("/:patientId/tasks/:taskId", updateTaskStatus);
 router.delete("/:patientId/tasks/:taskId", deleteTask);
 router.get("/:id/tasks", getPatientTasks);

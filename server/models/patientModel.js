@@ -56,6 +56,7 @@ const patientSchema = new mongoose.Schema({
   contactNumber: { type: String, required: true },
   tokens: { type: Number, default: 0 },
   stage: { type: Number, default: 1 },
+  stageStartDate: { type: Date, default: new Date() },
   tasks: { type: [taskSchema] },
   medication: { type: [medicationSchema] },
   reviews: { type: [reviewsSchema] },
@@ -71,7 +72,7 @@ export default patientModel;
 // const files = fs.readdirSync("../client/public/assets/avatars");
 
 (async function () {
-  return;
+  // return;
   const patients = await patientModel.find();
   for (let index = 0; index < patients.length; index++) {
     const patient = patients[index];
@@ -82,6 +83,10 @@ export default patientModel;
     //   if (!med.medication) {
     //     med.remove();
     //   }
+    // }
+
+    // if (!patient.patientStartDate) {
+    //   patient.stageStartDate = new Date();
     // }
 
     await patient.save();

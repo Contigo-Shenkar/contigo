@@ -29,7 +29,8 @@ export const signIn = async (req, res) => {
 };
 
 export const signUp = async (req, res) => {
-  const { fullName, email, password, userType } = req.body;
+  const { fName, lName, email, pass: password } = req.body;
+  console.log("req.body", req.body);
 
   try {
     const oldUser = await UserModel.findOne({ email });
@@ -43,9 +44,9 @@ export const signUp = async (req, res) => {
     const result = await UserModel.create({
       email,
       password: hashedPassword,
-      fullName,
-      userType,
+      fullName: `${fName} ${lName}`,
     });
+
     const token = jwt.sign({ email: result.email, id: result._id }, secret, {
       expiresIn: "1d",
     });
