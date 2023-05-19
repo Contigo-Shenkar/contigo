@@ -16,12 +16,14 @@ import { useAddNewPatientMutation } from "../../features/apiSlice";
 import CustomButton from "../customButton/customButton";
 import { DIAGNOSES } from "../../data/diagnoses";
 import { useState } from "react";
+import { hospitalizationReasons } from "./hospitalization-reasons";
 
 const AddPatientForm = (setOpen) => {
   const [addNewPatient] = useAddNewPatientMutation();
   const isNonMobile = useMediaQuery("(min-width:600px)");
   const [diagnosis, setDiagnosis] = useState([]);
   const [medication, setMedication] = useState([]);
+  const [reason, setReason] = useState([]);
 
   const handleDiagnosesChange = (event) => {
     const {
@@ -43,6 +45,16 @@ const AddPatientForm = (setOpen) => {
     );
   };
 
+  const handleReasonChange = (event) => {
+    const {
+      target: { value },
+    } = event;
+    setReason(
+      // On autofill we get a stringified value.
+      typeof value === "string" ? value.split(",") : value
+    );
+  };
+
   const handleFormSubmit = (values, { resetForm, setStatus }) => {
     console.log("handleFormSubmit", handleFormSubmit);
     try {
@@ -51,7 +63,12 @@ const AddPatientForm = (setOpen) => {
         const [condition, medication] = m.split("$");
         return { condition, medication };
       });
-      addNewPatient({ ...values, diagnosis, medication: meds });
+      const r = reason.map((r) => {
+        const [diagnosis, reasonName] = r.split("$");
+        return { diagnosis, reason: reasonName };
+      });
+
+      addNewPatient({ ...values, diagnosis, medication: meds, reasons: r });
       resetForm();
       setStatus({ success: true });
     } catch (error) {
@@ -139,6 +156,7 @@ const AddPatientForm = (setOpen) => {
                 variant="filled"
                 type="text"
                 label="Contact Number"
+                required={true}
                 onBlur={handleBlur}
                 onChange={handleChange}
                 value={values.contactNumber}
@@ -156,8 +174,8 @@ const AddPatientForm = (setOpen) => {
                 onChange={handleChange}
                 value={values.imageUrl}
                 name="imageUrl"
-                error={!!touched.contactNumber && !!errors.contactNumber}
-                helperText={touched.contactNumber && errors.contactNumber}
+                error={!!touched.imageUrl && !!errors.imageUrl}
+                helperText={touched.imageUrl && errors.contactNumber}
                 sx={{ gridColumn: "span 4" }}
               />
               <TextField
@@ -192,6 +210,38 @@ const AddPatientForm = (setOpen) => {
                     {name}
                   </MenuItem>
                 ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth sx={{ marginTop: "20px" }}>
+              <InputLabel id="demo-multiple-name-label">
+                Hospitalization Reasons
+              </InputLabel>
+              <Select
+                fullWidth
+                variant="filled"
+                labelId="demo-multiple-name-label"
+                id="medications"
+                multiple
+                value={reason}
+                disabled={diagnosis.length === 0}
+                onChange={handleReasonChange}
+                sx={{ gridColumn: "span 4" }}
+                input={<OutlinedInput label="Name" />}
+              >
+                {hospitalizationReasons
+                  .filter(({ diagnosis: diagnosisName }) =>
+                    diagnosis.includes(diagnosisName)
+                  )
+                  .flatMap(({ diagnosis: diagnosisName, causes }) => {
+                    return causes.map((cause, i) => (
+                      <MenuItem
+                        key={cause + i}
+                        value={diagnosisName + "$" + cause}
+                      >
+                        {diagnosisName}: {cause}
+                      </MenuItem>
+                    ));
+                  })}
               </Select>
             </FormControl>
             <FormControl fullWidth sx={{ marginTop: "20px" }}>
@@ -238,6 +288,7 @@ const phoneRegExp =
 
 const checkoutSchema = yup.object().shape({
   fullName: yup.string().required("required"),
+  imageUrl: yup.string().required("required"),
   email: yup.string().email("invalid email").required("required"),
   contactNumber: yup
     .string()
@@ -248,6 +299,7 @@ const checkoutSchema = yup.object().shape({
 });
 const initialValues = {
   fullName: "",
+  imageUrl: "",
   email: "",
   contactNumber: "",
   id: "",

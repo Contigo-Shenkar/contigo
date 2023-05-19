@@ -51,6 +51,7 @@ const TokensCalculation = () => {
           <Box display={"flex"} alignItems={"center"} gap={1}>
             <img
               height={40}
+              width={40}
               src={params.row.imageUrl}
               alt={params.value}
               style={{ borderRadius: "50px" }}

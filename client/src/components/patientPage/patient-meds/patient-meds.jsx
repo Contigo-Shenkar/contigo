@@ -2,16 +2,18 @@ import React, { useCallback, useMemo, useState } from "react";
 import {
   useAddReviewMutation,
   useGetAlternativeMedMutation,
+  useGetPatientByIdQuery,
   useUpdatePatientMutation,
 } from "../../../features/apiSlice";
-import { Box, Button, TextField, TextareaAutosize } from "@mui/material";
+import { Box, Button, TextField } from "@mui/material";
 import { useTheme } from "@mui/material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { tokens } from "../../../theme";
 import { toast } from "react-toastify";
 import Header from "../../header/Header";
+import { useParams } from "react-router-dom";
 
-export const PatientMeds = ({ patient }) => {
+export const PatientMeds = () => {
   const [reviewText, setReviewText] = useState("");
   const [alternativeMedications, setAlternativeMedications] = useState([]);
   const [replacedMed, setReplacedMed] = useState(null);
@@ -19,6 +21,11 @@ export const PatientMeds = ({ patient }) => {
   const [getAlternativeMedsQuery] = useGetAlternativeMedMutation();
   const [updatePatient] = useUpdatePatientMutation();
   const theme = useTheme();
+  const { id: patientId } = useParams();
+  const { data, isLoading, isError } = useGetPatientByIdQuery({
+    id: patientId,
+  });
+  const patient = data?.data;
   const colors = tokens(theme.palette.mode);
 
   const handleSeeAlternativeMeds = useCallback(
@@ -77,6 +84,7 @@ export const PatientMeds = ({ patient }) => {
         patientId: patient._id,
         data: { content: reviewText },
       });
+
       if (data.alternativeMedications.length) {
         const relevantDiagnosis = [
           ...new Set(data.recognizedSymptoms.map((s) => s.diagnosis)),
@@ -88,7 +96,10 @@ export const PatientMeds = ({ patient }) => {
         );
 
         setAlternativeMedications(data.alternativeMedications);
+      } else {
+        toast.success("Review added successfully");
       }
+      setReviewText("");
     } catch (error) {
       console.error("Error:", error);
     }
@@ -99,9 +110,14 @@ export const PatientMeds = ({ patient }) => {
       const { rows, columns } = getAlternativeMeds(
         alternativeMedications,
         onReplace,
-        replacedMed.medication
+        replacedMed?.medication
       );
       return { rows, columns };
+    }
+
+    console.log("patient", patient);
+    if (!patient?.medication?.length) {
+      return { rows: [], columns: [] };
     }
 
     return getMeds(
@@ -118,12 +134,32 @@ export const PatientMeds = ({ patient }) => {
     alternativeMedications,
     handleSeeAlternativeMeds,
     onReplace,
-    patient?.medication,
+    patient,
     replacedMed?.medication,
   ]);
 
+  const reviewHistory = useMemo(() => {
+    if (!patient?.reviews?.length) {
+      return { rows: [], columns: [] };
+    }
+
+    console.log("patient.review", patient.reviews);
+
+    return getReviews(patient.reviews);
+  }, [patient?.reviews]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (isError) {
+    return <div>Loading...</div>;
+  }
+
+  console.log({ rows, columns });
+
   return (
-    <div>
+    <Box px="35px" width="95%">
       <form onSubmit={handleAddReview}>
         <Header title="Add Review" subtitle="Add new review" />
 
@@ -185,16 +221,58 @@ export const PatientMeds = ({ patient }) => {
           },
         }}
       >
-        <DataGrid
-          rows={rows}
-          columns={columns}
-          components={{ Toolbar: GridToolbar }}
-          getRowId={(row) => row._id}
-        />
+        <Header title="Medication History" />
+        {rows && columns && (
+          <DataGrid
+            rows={rows}
+            columns={columns}
+            components={{ Toolbar: GridToolbar }}
+            getRowId={(row) => row._id}
+          />
+        )}
+        <br />
+        <br />
+        <Header title="Review History" subtitle="Add new review" />
+
+        {reviewHistory.rows && reviewHistory.columns && (
+          <DataGrid
+            columns={reviewHistory.columns}
+            rows={reviewHistory.rows}
+            components={{ Toolbar: GridToolbar }}
+            getRowId={(row) => row._id}
+          />
+        )}
       </Box>
-    </div>
+    </Box>
   );
 };
+
+function getReviews(reviews) {
+  return {
+    rows: reviews.map((r) => ({
+      ...r,
+      date: new Date(r.createdAt).toLocaleDateString("en-GB"),
+      recognizedSymptoms: r.recognizedSymptoms.map((s) => s.symptom).join(", "),
+    })),
+
+    columns: [
+      {
+        field: "date",
+        headerName: "Date",
+      },
+      {
+        field: "content",
+        headerName: "Content",
+        flex: 1,
+      },
+      {
+        field: "recognizedSymptoms",
+        headerName: "Recognized Symptoms",
+        minWidth: 150,
+      },
+    ],
+  };
+}
 function getMeds(medications, handleSeeAlternativeMeds) {
   return {
     rows: medications,
@@ -270,7 +348,9 @@ function getAlternativeMeds(alternativeMedications, onReplace, replacedMed) {
           variant="contained"
           onClick={() => onReplace(data.row)}
         >
-          Replace "{replacedMed}" with this med
+          {replacedMed
+            ? `Replace "${replacedMed}" with this med`
+            : "Replace with this med"}
         </Button>
       ),
     },

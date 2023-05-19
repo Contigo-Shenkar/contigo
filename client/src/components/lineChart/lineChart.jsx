@@ -1,12 +1,9 @@
 import { ResponsiveLine } from "@nivo/line";
 import { tokens } from "../../theme";
 import { useTheme } from "@mui/material";
-import { mockLineData as data } from "../../data/mockData";
+import { mockLineData } from "../../data/mockData";
 
-export const LineChart = ({
-  isCustomLineColors = false,
-  isDashboard = false,
-}) => {
+export const LineChart = ({ data = mockLineData, isDashboard = false }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
@@ -89,11 +86,12 @@ export const LineChart = ({
       useMesh={true}
       legends={[
         {
-          anchor: "bottom-right",
+          anchor: "bottom",
+
           direction: "column",
           justify: false,
           translateX: 100,
-          translateY: 0,
+          translateY: 50,
           itemsSpacing: 0,
           itemDirection: "left-to-right",
           itemWidth: 80,

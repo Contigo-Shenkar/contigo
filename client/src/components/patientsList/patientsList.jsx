@@ -1,23 +1,12 @@
 import React, { useState } from "react";
 import { useGetPatientsQuery } from "../../features/apiSlice";
 import PatientRow from "./patient-row/patient-row";
-import { tokens } from "../../theme";
-import {
-  Container,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  Box,
-  useTheme,
-} from "@mui/material";
+import { Container, Dialog, DialogContent, Box } from "@mui/material";
 import AddPatientForm from "../addPatientForm/addPatientForm";
 import CustomButton from "../customButton/customButton";
 import Header from "../header/Header";
 
 const PatientsList = () => {
-  const theme = useTheme();
-  const colors = tokens(theme.palette.mode);
   const { data: patients, isLoading, isError } = useGetPatientsQuery();
   const [open, setOpen] = useState(false);
 
@@ -40,7 +29,10 @@ const PatientsList = () => {
   return (
     <Container fixed>
       <Box display="flex" justifyContent="space-between" alignItems="center">
-        <Header title="Patient's List" subtitle="Managing Patient's List for the Children’s Psychiatric Uni at Sheba" />
+        <Header
+          title="Patient's List"
+          subtitle="Managing Patient's List for the Children’s Psychiatric Uni at Sheba"
+        />
         <CustomButton onClick={handleOpen}>Add New Patient</CustomButton>
       </Box>
       <Dialog open={open} onClose={handleClose}>

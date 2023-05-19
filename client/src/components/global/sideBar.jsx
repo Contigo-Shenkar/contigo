@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ProSidebar, Menu, MenuItem } from "react-pro-sidebar";
 import "react-pro-sidebar/dist/css/styles.css";
 import { Box, IconButton, Typography, useTheme } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { tokens } from "../../theme";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import PeopleOutlinedIcon from "@mui/icons-material/PeopleOutlined";
@@ -10,15 +10,13 @@ import FunctionsIcon from "@mui/icons-material/Functions";
 import ReceiptOutlinedIcon from "@mui/icons-material/ReceiptOutlined";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
-import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
-import PieChartOutlineOutlinedIcon from "@mui/icons-material/PieChartOutlineOutlined";
-import TimelineOutlinedIcon from "@mui/icons-material/TimelineOutlined";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
-import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
 import SummarizeIcon from "@mui/icons-material/Summarize";
 import TableChartIcon from "@mui/icons-material/TableChart";
+import LogoutIcon from "@mui/icons-material/Logout";
+import { useTokenLoginQuery } from "../../features/apiSlice";
 
-const Item = ({ title, to, icon, selected, setSelected }) => {
+const Item = ({ title, to, icon, selected, setSelected, onClick }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   return (
@@ -27,7 +25,10 @@ const Item = ({ title, to, icon, selected, setSelected }) => {
       style={{
         color: colors.grey[100],
       }}
-      onClick={() => setSelected(title)}
+      onClick={() => {
+        setSelected(title);
+        onClick && onClick();
+      }}
       icon={icon}
     >
       <Typography>{title}</Typography>
@@ -38,15 +39,18 @@ const Item = ({ title, to, icon, selected, setSelected }) => {
 
 const Sidebar = () => {
   const theme = useTheme();
+  const { data, isLoading, currentData } = useTokenLoginQuery();
+  const navigate = useNavigate();
   const colors = tokens(theme.palette.mode);
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [selected, setSelected] = useState("Dashboard");
-
+  const user = data?.user;
+  console.log("user", user);
   return (
     <Box
       sx={{
         "& .pro-sidebar-inner": {
-          background: `${colors.primary[400]} !important`,
+          background: `${colors.primary[400]} !important `,
         },
         "& .pro-icon-wrapper": {
           backgroundColor: "transparent !important",
@@ -95,10 +99,14 @@ const Sidebar = () => {
               <Box display="flex" justifyContent="center" alignItems="center">
                 <img
                   alt="profile-user"
-                  width="100px"
-                  height="100px"
-                  src={"../../assets/mariela.png"}
-                  style={{ cursor: "pointer", borderRadius: "50%" }}
+                  src={user?.imageUrl || "/assets/images/user.png"}
+                  style={{
+                    cursor: "pointer",
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                    width: "140px",
+                    height: "140px",
+                  }}
                 />
               </Box>
               <Box textAlign="center">
@@ -108,10 +116,10 @@ const Sidebar = () => {
                   fontWeight="bold"
                   sx={{ m: "10px 0 0 0" }}
                 >
-                  Dr. Mariela Moshava
+                  Dr. {user?.fullName || ""}
                 </Typography>
                 <Typography variant="h5" color={colors.greenAccent[500]}>
-                  Senior psychiatrist at Sheba
+                  psychiatrist
                 </Typography>
               </Box>
             </Box>
@@ -126,7 +134,24 @@ const Sidebar = () => {
               selected={selected}
               setSelected={setSelected}
             />
-            
+            <Item
+              title="Profile"
+              to="/profile"
+              icon={<PersonOutlinedIcon />}
+              selected={selected}
+              setSelected={setSelected}
+            />
+            <Item
+              title="Logout"
+              to="/profile"
+              icon={<LogoutIcon />}
+              selected={selected}
+              setSelected={setSelected}
+              onClick={() => {
+                localStorage.removeItem("token");
+                navigate("/login");
+              }}
+            />
             <Typography
               variant="h6"
               color={colors.grey[300]}
@@ -142,7 +167,7 @@ const Sidebar = () => {
               setSelected={setSelected}
             />
             <Item
-              title="Reviews"
+              title="Tokens"
               to="/tokens"
               icon={<TableChartIcon />}
               selected={selected}
@@ -156,7 +181,13 @@ const Sidebar = () => {
               selected={selected}
               setSelected={setSelected}
             />
-            
+            <Item
+              title="Medicine Recommendation"
+              to="/invoices"
+              icon={<ReceiptOutlinedIcon />}
+              selected={selected}
+              setSelected={setSelected}
+            />
 
             <Typography
               variant="h6"
@@ -173,7 +204,13 @@ const Sidebar = () => {
               selected={selected}
               setSelected={setSelected}
             />
-            
+            <Item
+              title="Home Report"
+              to="/homeReport"
+              icon={<SummarizeIcon />}
+              selected={selected}
+              setSelected={setSelected}
+            />
           </Box>
         </Menu>
       </ProSidebar>

@@ -42,7 +42,6 @@ import {
 
 import Header from "../header/Header";
 import { STATUSES, regularTasks, taskCategories } from "./tasks";
-import { analyzeTasksCompletion } from "../../helpers/analyze-tasks";
 import { toast } from "react-toastify";
 import DateRangePicker from "./date-range-picker";
 
@@ -55,7 +54,7 @@ const PatientTasks = () => {
   const [taskIdToDelete, setTaskIdToDelete] = useState("");
   const [taskCategory, setTaskCategory] = useState("");
   const [taskType, setTaskType] = useState("ADHD");
-  const [stages, setStages] = useState("all-stages");
+  const [stages, setStages] = useState("this-stage");
   const [status, setStatus] = useState(ALL_STATUSES);
   const [dateRange, setDateRange] = useState([null, null]);
   const theme = useTheme();
@@ -63,7 +62,6 @@ const PatientTasks = () => {
   const [addNewPatientTask] = useAddNewPatientTaskMutation();
   const [deletePatientTask] = useDeletePatientTaskMutation();
   const [updateTaskStatus] = useUpdateTaskStatusMutation();
-  const [updatePatient] = useUpdatePatientMutation();
   const { data, isLoading, isError } = useGetPatientByIdQuery({
     id: patientId,
   });
@@ -72,10 +70,9 @@ const PatientTasks = () => {
   const filteredStageTasks = useMemo(() => {
     if (!patient?.tasks) return [];
     let tasks = [...patient?.tasks];
-    console.log("tasks", tasks);
 
     if (stages === "this-stage") {
-      tasks = tasks.filter((task) => task.hidden);
+      tasks = tasks.filter((task) => !task.hidden);
     }
     if (dateRange[0]) {
       tasks = tasks.filter(
@@ -129,21 +126,19 @@ const PatientTasks = () => {
       status,
     });
     if (status === STATUSES.COMPLETED) {
-      const updatedPatient = {
-        ...patient,
-        tasks: filteredStageTasks.map((task) => {
-          if (task._id === taskId) {
-            return { ...task, status: STATUSES.COMPLETED };
-          }
-          return task;
-        }),
-      };
-      const [analysis] = analyzeTasksCompletion([updatedPatient]);
-      if (analysis.isSuccessful) {
-        const nextStage = patient.stage + 1;
-        await updatePatient({ patientId, data: { stage: nextStage } });
-        toast.success(`Patient has moved to next stage (${nextStage})!`);
-      }
+      toast.success(`Task completed successfully`);
+    }
+  };
+
+  const handleCheckStage = async () => {
+    const res = await fetch(
+      `http://localhost:3001/api/patients/checkStage/${patientId}`
+    );
+    const data = await res.json();
+    if (data.isSuccessful) {
+      toast.success(`Ready for next stage`);
+    } else {
+      toast.error(`Not ready for next stage: ${data.reason}`);
     }
   };
 
@@ -371,6 +366,21 @@ const PatientTasks = () => {
             Delete Task
           </Button>
           {DeleteTaskDialog}
+        </Grid>
+        <Grid item>
+          <Button
+            variant="contained"
+            sx={{
+              backgroundColor: colors.greenAccent[600],
+              color: colors.primary[100],
+              "&:hover": {
+                backgroundColor: colors.greenAccent[800],
+              },
+            }}
+            onClick={handleCheckStage}
+          >
+            Check Stage
+          </Button>
         </Grid>
       </Grid>
 

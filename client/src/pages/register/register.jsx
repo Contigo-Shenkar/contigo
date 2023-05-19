@@ -16,6 +16,7 @@ import { useEffect } from "react";
 export function Register() {
   const [email, setEmail] = useState(null);
   const [pass, setPass] = useState(null);
+  const [imageUrl, setImageUrl] = useState("");
   const [fName, setFName] = useState(null);
   const [lName, setLName] = useState(null);
   const [terms, setTerms] = useState(false);
@@ -27,7 +28,7 @@ export function Register() {
   ] = useRegisterMutation({});
 
   const formSubmitHandler = async (data) => {
-    await register({ email, fName, lName, pass, terms });
+    await register({ email, fName, lName, pass, terms, imageUrl });
   };
 
   useEffect(() => {
@@ -74,6 +75,19 @@ export function Register() {
                 />
               </Form.Item>
             </div>
+            <Form.Item
+              name="imageUrl"
+              label="Image Url"
+              rules={[getRequrieRules("Image Url")]}
+            >
+              <Input
+                placeholder="Image Url"
+                size="large"
+                className="bottom-1  lg:py-3  sm:py-2 py-1 border-black"
+                onChange={(e) => setImageUrl(e.target.value)}
+                value={imageUrl}
+              />
+            </Form.Item>
             <Form.Item
               name="email"
               label="Email"

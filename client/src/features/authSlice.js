@@ -6,6 +6,7 @@ export const authApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: "http://localhost:3001/",
   }),
+  tagTypes: ["User"],
   endpoints: (builder) => ({
     login: builder.mutation({
       query: (credentials) => ({
@@ -15,13 +16,16 @@ export const authApi = createApi({
       }),
     }),
     register: builder.mutation({
-      query: (data) => ({
-        url: "/api/users/register",
-        method: "POST",
-        body: data,
-      }),
+      query: (data) => {
+        return {
+          url: "/api/users/register",
+          method: "POST",
+          body: data,
+        };
+      },
     }),
   }),
 });
 
-export const { useLoginMutation, useRegisterMutation } = authApi;
+export const { useLoginMutation, useRegisterMutation, useTokenLoginQuery } =
+  authApi;

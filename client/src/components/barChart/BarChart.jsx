@@ -12,6 +12,17 @@ const defaultKeys = [
   "donut",
 ];
 
+const styles = {
+  margin: { top: 45, right: 30, bottom: 50, left: 30 },
+  innerPadding: 0,
+  padding: 0.3,
+  enableLabel: true,
+  labelTextColor: {
+    from: "color",
+    modifiers: [["darker", 1.6]],
+  },
+};
+
 export const BarChart = ({
   isDashboard = false,
   keys = defaultKeys,
@@ -20,11 +31,10 @@ export const BarChart = ({
 }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-  console.log("keys", keys);
-  console.log("values", values);
 
   return (
     <ResponsiveBar
+      {...styles}
       tooltip={({ id, value, color }) => (
         <strong
           style={{
@@ -69,25 +79,8 @@ export const BarChart = ({
       }}
       keys={keys}
       indexBy={indexBy}
-      margin={{ top: 45, right: 30, bottom: 50, left: 30 }}
-      padding={0.3}
-      gridYValues={[0, 1, 2, 3, 4, 5, 6, 7]}
-      valueScale={{ type: "linear", clamp: true, min: 0 }}
-      colors={{ scheme: "nivo" }}
-      borderColor={{
-        from: "color",
-        modifiers: [["darker", "1.6"]],
-      }}
-      axisTop={null}
-      axisRight={null}
-      enableLabel={false}
-      labelSkipWidth={12}
-      labelSkipHeight={12}
-      labelTextColor={{
-        from: "color",
-        modifiers: [["darker", 1.6]],
-      }}
-      minScaleValueJump={1}
+      // gridYValues={[0, 1, 2, 3, 4, 5, 6, 7]}
+      // valueScale={{ type: "linear", clamp: true }}
     />
   );
 };

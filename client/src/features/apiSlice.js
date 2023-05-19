@@ -97,6 +97,13 @@ export const apiSlice = createApi({
       query: () => "api/taskBank",
       providesTags: ["patients"],
     }),
+    tokenLogin: builder.query({
+      query: () => {
+        return {
+          url: "/api/users/tokenLogin/" + localStorage.getItem("token"),
+        };
+      },
+    }),
   }),
 });
 
@@ -114,4 +121,5 @@ export const {
   useLazyGetPatientByIdQuery,
   useAddReviewMutation,
   useGetAlternativeMedMutation,
+  useTokenLoginQuery,
 } = apiSlice;

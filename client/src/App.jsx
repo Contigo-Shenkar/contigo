@@ -4,11 +4,9 @@ import { CssBaseline, ThemeProvider } from "@mui/material";
 import { Routes, Route, useLocation } from "react-router-dom";
 import Topbar from "./components/global/topBar";
 import Sidebar from "./components/global/sideBar";
-import Dashboard from "./scenes/dashboard/index";
 import PatientsList from "./components/patientsList/patientsList";
 import TasksMonitoring from "./components/task-monitoring/task-monitoring";
 import Invoices from "./scenes/invoices";
-import LoginForm from "./components/login/loginForm";
 import PatientTasks from "./components/patientTasks/patientTasks";
 import PrivateRoute from "./components/privateRoute/PrivateRoute";
 import { PatientPage } from "./components/patientPage/patientPage";
@@ -23,16 +21,17 @@ import { ToastContainer } from "react-toastify";
 import { PatientMeds } from "./components/patientPage/patient-meds/patient-meds";
 import { Register } from "./pages/register/register";
 import { Login } from "./pages/login/login";
+import Dashboard from "./pages/dashboard";
 
 const fullPages = ["/login", "/", "/register"];
 
 const App = () => {
   const [theme, colorMode] = useMode();
-  const isAuthenticated = !!localStorage.getItem("token");
+  const token = localStorage.getItem("token");
   const location = useLocation();
 
   const isFullPage = fullPages.includes(location.pathname);
-  const shouldShowSidebar = isAuthenticated && !isFullPage;
+  const shouldShowSidebar = !!token && !isFullPage;
 
   return (
     <ColorModeContext.Provider value={colorMode}>
@@ -68,6 +67,14 @@ const App = () => {
                 element={
                   <PrivateRoute>
                     <PatientTasks />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/patients/:id/review-and-meds"
+                element={
+                  <PrivateRoute>
+                    <PatientMeds />
                   </PrivateRoute>
                 }
               />

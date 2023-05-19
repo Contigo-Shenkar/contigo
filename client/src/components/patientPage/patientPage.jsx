@@ -1,6 +1,5 @@
 import Header from "../header/Header";
 import { tokens } from "../../theme";
-import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import { Link, useParams } from "react-router-dom";
 // import {alertNotification} from "../alert/alertNotification";
 import { useGetPatientByIdQuery } from "../../features/apiSlice";
@@ -19,7 +18,7 @@ import {
 import { PatientMeds } from "./patient-meds/patient-meds";
 import { STATUSES, categoryPerActivity } from "../patientTasks/tasks";
 import { BarChart } from "../barChart/BarChart";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 
 import { isPast7days, isToday } from "../../helpers/analyze-tasks";
 import {
@@ -31,6 +30,19 @@ import {
 import PieChart from "../pieChart/pieChart";
 import { Insights } from "./insights/insights";
 
+function updatedRecentlyVisited(patientId) {
+  const recentlyVisited =
+    JSON.parse(localStorage.getItem("recentlyVisited")) || [];
+  const updatedRecentlyVisited = recentlyVisited.filter(
+    (id) => id !== patientId
+  );
+  updatedRecentlyVisited.unshift(patientId);
+  localStorage.setItem(
+    "recentlyVisited",
+    JSON.stringify(updatedRecentlyVisited)
+  );
+}
+
 const totalTokensKeys = ["Today", "Last Week", "All Time"];
 export const PatientPage = () => {
   const { id: patientId } = useParams();
@@ -41,6 +53,10 @@ export const PatientPage = () => {
   } = useGetPatientByIdQuery({ id: patientId });
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+
+  useEffect(() => {
+    updatedRecentlyVisited(patientId);
+  }, [patientId]);
 
   const {
     openTasksInTheLast7Days,
@@ -129,6 +145,29 @@ export const PatientPage = () => {
     };
   }, [patient]);
 
+  const reason = useMemo(() => {
+    if (!patient?.data?.reasons) return "No reason given for this patient";
+
+    const obj = {};
+    for (const { diagnosis, reason } of patient?.data?.reasons) {
+      obj[diagnosis] = obj[diagnosis] || [];
+      obj[diagnosis].push(reason);
+    }
+    const reasonString = Object.entries(obj).map(
+      ([diagnosis, reasons]) =>
+        `${diagnosis}: ${reasons.map((r) => `${r}`).join(", ")}`
+    );
+    return (
+      <>
+        <div>Reasons for hospitalization:</div>
+        {reasonString.map((r) => (
+          <li>{r}</li>
+        ))}
+        <br />
+      </>
+    );
+  }, [patient?.data?.reasons]);
+
   const cardStyles = {
     width: 400,
     height: 250,
@@ -152,7 +191,7 @@ export const PatientPage = () => {
         title={`${patient.data.fullName} personal information`}
         subtitle="Welcome to your personal card"
       />
-      <Box display={"flex"} sx={{ m: "15px" }}>
+      <Box display={"flex"} gap="30px" sx={{ m: "15px" }}>
         <Link
           to={`/patients/${patientId}/tasks`}
           style={{ color: colors.greenAccent[300] }}
@@ -166,7 +205,21 @@ export const PatientPage = () => {
             View & manage patients tasks
           </Button>
         </Link>
+        <Link
+          to={`/patients/${patientId}/review-and-meds`}
+          style={{ color: colors.greenAccent[300] }}
+        >
+          <Button
+            sx={{ fontSize: "18px" }}
+            size="large"
+            color="secondary"
+            variant="contained"
+          >
+            Review & view meds
+          </Button>
+        </Link>
       </Box>
+      <Box>{reason}</Box>
       <Grid
         container
         spacing={3}
