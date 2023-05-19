@@ -2,6 +2,7 @@ import { STATUSES } from "../helpers/tasks.js";
 import patientModel from "../models/patientModel.js";
 import mongoose from "mongoose";
 import DiagnosesAndMeds from "../helpers/diagnoses-and-meds.json" assert { type: "json" };
+import { checkPatientStage } from "./helpers/check-stage.js";
 
 export const getPatientsList = async (req, res) => {
   try {
@@ -30,36 +31,6 @@ export const getPatientById = async (req, res) => {
     }
 
     res.status(200).json({ data: patient });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-export const getPatientByIdMinimal = async (req, res) => {
-  const { id } = req.params;
-  try {
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res
-        .status(404)
-        .json({ message: `No patient exists with id:${id}` });
-    }
-
-    const patient = await patientModel.findById(id).select({
-      _id: 1,
-      fullName: 1,
-      id: 1,
-      age: 1,
-      tokens: 1,
-      stage: 1
-    });
-
-    if (!patient) {
-      return res
-        .status(404)
-        .json({ message: `No patient exists with id:${id}` });
-    }
-
-    res.status(200).json(patient);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -178,7 +149,7 @@ export const updatePatient = async (req, res) => {
     }
 
     if (patient.stage < stage) {
-      patient.stage = stage;
+      patient.stage = Math.min(stage, 5); // max stage is 5
       patient.tasks.forEach((task) => {
         task.hidden = true;
       });
@@ -327,5 +298,19 @@ export const updateTaskStatus = async (req, res) => {
     return res
       .status(500)
       .json({ message: "Error updating task status: " + error.message });
+  }
+};
+
+export const checkStage = async (req, res) => {
+  const { patientId } = req.params;
+
+  try {
+    const patient = await patientModel.findById(patientId);
+    const { isSuccessful, reason } = checkPatientStage(patient);
+
+    res.json({ isSuccessful, reason });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
   }
 };

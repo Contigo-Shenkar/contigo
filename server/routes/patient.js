@@ -2,7 +2,6 @@ import express from "express";
 import {
   getPatientsList,
   addNewPatient,
-  getPatientByIdMinimal,
   updatePatient,
   deletePatient,
   addTask,
@@ -12,6 +11,7 @@ import {
   deleteTask,
   addMedication,
   addReview,
+  checkStage,
 } from "../controllers/patient-controller.js";
 const router = express.Router();
 
@@ -27,10 +27,10 @@ router.post("/", addNewPatient);
 router.post("/:id/reviews", addReview);
 router.post("/:id/tasks", addTask);
 router.post("/:id/medication", addMedication);
-router.get("/minimal/:id", getPatientByIdMinimal);
 router.patch("/:patientId/tasks/:taskId", updateTaskStatus);
 router.delete("/:patientId/tasks/:taskId", deleteTask);
 router.get("/:id/tasks", getPatientTasks);
+router.get("/checkStage/:patientId", checkStage);
 router.patch("/:id", updatePatient);
 router.delete("/:id", deletePatient);
 

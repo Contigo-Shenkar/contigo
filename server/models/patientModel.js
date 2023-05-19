@@ -1,7 +1,9 @@
 import mongoose from "mongoose";
 import { STATUSES } from "../helpers/tasks.js";
-import fs from "fs";
-import path from "path";
+import { checkStage } from "../controllers/patient-controller.js";
+import * as stages from "../../client/src/helpers/stages.mjs";
+import { checkPatientStage } from "../controllers/helpers/check-stage.js";
+const { daysPerStage } = stages;
 
 const taskSchema = new mongoose.Schema({
   task: { type: String, required: true },
@@ -37,15 +39,17 @@ const medicationSchema = new mongoose.Schema({
   endedAt: { type: Date },
 });
 
-const reviewsSchema = new mongoose.Schema({
-  content: { type: String, required: true },
-  date: { type: Date, default: new Date() },
-  recognizedSymptoms: {
-    type: [{ med: String, diagnosis: String, symptom: String }],
-    default: [],
-    required: true,
+const reviewsSchema = new mongoose.Schema(
+  {
+    content: { type: String, required: true },
+    recognizedSymptoms: {
+      type: [{ med: String, diagnosis: String, symptom: String }],
+      default: [],
+      required: true,
+    },
   },
-});
+  { timestamps: true }
+);
 
 const patientSchema = new mongoose.Schema({
   fullName: { type: String, required: true },
@@ -62,6 +66,15 @@ const patientSchema = new mongoose.Schema({
   reviews: { type: [reviewsSchema] },
   causeOfAdmitting: { type: String },
   diagnosis: { type: [String] },
+  reasons: {
+    type: [
+      {
+        diagnosis: String,
+        reason: [String],
+      },
+    ],
+    default: [],
+  },
   createdAt: { type: Date, default: new Date() },
   tasks: { type: [taskSchema] },
 });
@@ -74,6 +87,7 @@ export default patientModel;
 (async function () {
   // return;
   const patients = await patientModel.find();
+  // patients[0].stageStartDate = new Date("2021-06-01T00:00:00.000Z");
   for (let index = 0; index < patients.length; index++) {
     const patient = patients[index];
 
@@ -115,3 +129,33 @@ export default patientModel;
   // }
   // }
 })();
+
+// interval for checking the ability to level up
+setInterval(async () => {
+  const patients = await patientModel.find();
+  for (const patient of patients) {
+    const minimumDays = daysPerStage[patient.stage];
+    const daysOnStage = Math.floor(
+      (new Date() - new Date(patient.stageStartDate)) / (1000 * 60 * 60 * 24)
+    );
+
+    if (daysOnStage < minimumDays) {
+      console.log("not enough days on stage", patient.fullName);
+      continue;
+    } else {
+      console.log("enough days on stage", patient.fullName);
+    }
+    const { isSuccessful } = checkPatientStage(patient);
+    console.log(patient.fullName, "isSuccessful", isSuccessful);
+
+    if (isSuccessful) {
+      console.log("level up", patient.fullName);
+      const nextStage = patient.stage + 1;
+      patient.stage = Math.min(nextStage, 5); // max stage is 5
+      patient.tasks.forEach((task) => {
+        task.hidden = true;
+      });
+      await patient.save();
+    }
+  }
+}, 1000 * 60 * 60 * 24);
