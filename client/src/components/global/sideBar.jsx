@@ -135,13 +135,6 @@ const Sidebar = () => {
               setSelected={setSelected}
             />
             <Item
-              title="Profile"
-              to="/profile"
-              icon={<PersonOutlinedIcon />}
-              selected={selected}
-              setSelected={setSelected}
-            />
-            <Item
               title="Logout"
               to="/profile"
               icon={<LogoutIcon />}
@@ -167,7 +160,7 @@ const Sidebar = () => {
               setSelected={setSelected}
             />
             <Item
-              title="Tokens"
+              title="Children Reviews"
               to="/tokens"
               icon={<TableChartIcon />}
               selected={selected}
@@ -181,13 +174,7 @@ const Sidebar = () => {
               selected={selected}
               setSelected={setSelected}
             />
-            <Item
-              title="Medicine Recommendation"
-              to="/invoices"
-              icon={<ReceiptOutlinedIcon />}
-              selected={selected}
-              setSelected={setSelected}
-            />
+            
 
             <Typography
               variant="h6"
@@ -204,13 +191,7 @@ const Sidebar = () => {
               selected={selected}
               setSelected={setSelected}
             />
-            <Item
-              title="Home Report"
-              to="/homeReport"
-              icon={<SummarizeIcon />}
-              selected={selected}
-              setSelected={setSelected}
-            />
+           
           </Box>
         </Menu>
       </ProSidebar>
