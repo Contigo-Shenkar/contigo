@@ -3,6 +3,7 @@ import patientModel from "../models/patientModel.js";
 import mongoose from "mongoose";
 import DiagnosesAndMeds from "../helpers/diagnoses-and-meds.json" assert { type: "json" };
 import { checkPatientStage } from "./helpers/check-stage.js";
+import fetch from "node-fetch";
 
 export const getPatientsList = async (req, res) => {
   try {
@@ -10,6 +11,35 @@ export const getPatientsList = async (req, res) => {
     res.status(200).json({ data: todoList });
   } catch (error) {
     res.status(401).json({ message: error.message });
+  }
+};
+export const getPatientByIdMinimal = async (req, res) => {
+  const { id } = req.params;
+  try {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res
+        .status(404)
+        .json({ message: `No patient exists with id:${id}` });
+    }
+
+    const patient = await patientModel.findById(id).select({
+      _id: 1,
+      fullName: 1,
+      id: 1,
+      age: 1,
+      tokens: 1,
+      stage: 1
+    });
+
+    if (!patient) {
+      return res
+        .status(404)
+        .json({ message: `No patient exists with id:${id}` });
+    }
+
+    res.status(200).json(patient);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -78,53 +108,80 @@ export const addReview = async (req, res) => {
       return res.status(404).json({ message: "Patient not found." });
     }
 
-    if (patient.medication?.length > 0) {
-      // meds prescribed to patient
-      const relevantMedications = [];
-
-      for (const medication of DiagnosesAndMeds) {
-        for (const patientMed of patient.medication) {
-          if (
-            medication[medKey] === patientMed.medication &&
-            medication[diagnosisKey] === patientMed.condition
-          ) {
-            relevantMedications.push(medication);
-          }
-        }
+    if (patient.medication.length > 0) {
+      const reviewData = {
+        review: content,
+        medication: patient.medication[0].medication,
+        condition: patient.medication[0].condition,
+      };
+      console.log(reviewData);
+      const response = await fetch("http://127.0.0.1:5000/predict", {
+        method: "POST",
+        body: JSON.stringify(reviewData),
+        headers: { "Content-Type": "application/json" },
+      });
+      const algoData = await response.json();
+      const alternativeMedications = [];
+      for (const [medicationName, data] of Object.entries(algoData)) {
+        alternativeMedications.push({
+          medication: medicationName,
+          reviewCount: data["amount of reviews"],
+          score: data.score,
+        });
       }
-
-      const recognizedSymptoms = [];
-      const relevantDiagnoses = new Set();
-
-      // current meds with side effects
-      const sideAffectMeds = new Set();
-      for (const medication of relevantMedications) {
-        for (const symptom of medication["Problem/side effects"]) {
-          if (content.includes(symptom.toLowerCase())) {
-            relevantDiagnoses.add(medication[diagnosisKey]);
-            sideAffectMeds.add(medication[medKey]);
-            recognizedSymptoms.push({
-              diagnosis: medication[diagnosisKey],
-              symptom,
-              med: medication[medKey],
-            });
-          }
-        }
-      }
-
-      if (!patient.reviews) {
-        patient.reviews = [];
-      }
-      patient.reviews.push({ content, recognizedSymptoms });
-
-      const alternativeMedications = DiagnosesAndMeds.filter(
-        (med) =>
-          relevantDiagnoses.has(med[diagnosisKey]) &&
-          !sideAffectMeds.has(med[medKey])
-      );
-      await patient.save();
-      return res.json({ alternativeMedications, recognizedSymptoms });
+      alternativeMedications.sort((a, b) => b.score - a.score);
+      res.json({ alternativeMedications });
+      patient.reviews.push({ content });
+      return;
     }
+
+    // if (patient.medication?.length > 0) {
+    //   // meds prescribed to patient
+    //   const relevantMedications = [];
+
+    //   for (const medication of DiagnosesAndMeds) {
+    //     for (const patientMed of patient.medication) {
+    //       if (
+    //         medication[medKey] === patientMed.medication &&
+    //         medication[diagnosisKey] === patientMed.condition
+    //       ) {
+    //         relevantMedications.push(medication);
+    //       }
+    //     }
+    //   }
+
+    //   const recognizedSymptoms = [];
+    //   const relevantDiagnoses = new Set();
+
+    //   // current meds with side effects
+    //   const sideAffectMeds = new Set();
+    //   for (const medication of relevantMedications) {
+    //     for (const symptom of medication["Problem/side effects"]) {
+    //       if (content.includes(symptom.toLowerCase())) {
+    //         relevantDiagnoses.add(medication[diagnosisKey]);
+    //         sideAffectMeds.add(medication[medKey]);
+    //         recognizedSymptoms.push({
+    //           diagnosis: medication[diagnosisKey],
+    //           symptom,
+    //           med: medication[medKey],
+    //         });
+    //       }
+    //     }
+    //   }
+
+    //   if (!patient.reviews) {
+    //     patient.reviews = [];
+    //   }
+    //   patient.reviews.push({ content, recognizedSymptoms });
+
+    //   const alternativeMedications = DiagnosesAndMeds.filter(
+    //     (med) =>
+    //       relevantDiagnoses.has(med[diagnosisKey]) &&
+    //       !sideAffectMeds.has(med[medKey])
+    //   );
+    //   await patient.save();
+    //   return res.json({ alternativeMedications, recognizedSymptoms });
+    // }
 
     patient.reviews.push({ content });
     await patient.save();

@@ -45,7 +45,6 @@ const reviewsSchema = new mongoose.Schema(
     recognizedSymptoms: {
       type: [{ med: String, diagnosis: String, symptom: String }],
       default: [],
-      required: true,
     },
   },
   { timestamps: true }
