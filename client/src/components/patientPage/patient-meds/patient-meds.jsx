@@ -12,10 +12,14 @@ import { tokens } from "../../../theme";
 import { toast } from "react-toastify";
 import Header from "../../header/Header";
 import { useParams } from "react-router-dom";
+import { Avatar, Typography } from "@mui/material";
 
 export const PatientMeds = () => {
   const [reviewText, setReviewText] = useState("");
   const [alternativeMedications, setAlternativeMedications] = useState([]);
+  const [algoAlternativeMedications, setAlgoAlternativeMedications] = useState(
+    []
+  );
   const [replacedMed, setReplacedMed] = useState(null);
   const [addReview] = useAddReviewMutation();
   const [getAlternativeMedsQuery] = useGetAlternativeMedMutation();
@@ -47,11 +51,13 @@ export const PatientMeds = () => {
   const onReplace = useCallback(
     async (row) => {
       try {
-        console.log("row", row);
         const updatedMeds = [...patient.medication];
+        // console.log("updatedMeds", updatedMeds);
+        // console.log("replacedMed", replacedMed);
         const index = updatedMeds.findIndex(
           (m) => m.medication === replacedMed.medication
         );
+        console.log("index", index);
         // update endedAt for the replaced med
         updatedMeds[index] = {
           ...updatedMeds[index],
@@ -59,7 +65,7 @@ export const PatientMeds = () => {
         };
         const newMed = {
           condition: replacedMed.condition,
-          medication: row["Medication/drug name"],
+          medication: row["Medication/drug name"] || row.medication,
         };
         updatedMeds.push(newMed);
         const { data } = await updatePatient({
@@ -70,7 +76,9 @@ export const PatientMeds = () => {
           return toast.error(data.message);
         }
         setAlternativeMedications(data.alternatives);
+        setAlgoAlternativeMedications([]);
       } catch (e) {
+        console.log(e);
         return toast.error(e.message);
       }
     },
@@ -85,17 +93,11 @@ export const PatientMeds = () => {
         data: { content: reviewText },
       });
 
+      console.log("data", data);
       if (data.alternativeMedications.length) {
-        const relevantDiagnosis = [
-          ...new Set(data.recognizedSymptoms.map((s) => s.diagnosis)),
-        ];
-        toast.warning(
-          "Found possible side effects for medication treatment for " +
-            relevantDiagnosis.join(", ") +
-            ". Listed alternative medications."
-        );
-
-        setAlternativeMedications(data.alternativeMedications);
+        toast.warning("Showing alternative medications.");
+        setReplacedMed(patient.medication[0]);
+        setAlgoAlternativeMedications(data.alternativeMedications);
       } else {
         toast.success("Review added successfully");
       }
@@ -106,6 +108,14 @@ export const PatientMeds = () => {
   };
 
   const { rows, columns } = useMemo(() => {
+    if (algoAlternativeMedications?.length) {
+      const { rows, columns } = getAlgoAlternativeMeds(
+        algoAlternativeMedications,
+        onReplace,
+        replacedMed?.medication
+      );
+      return { rows, columns };
+    }
     if (alternativeMedications?.length) {
       const { rows, columns } = getAlternativeMeds(
         alternativeMedications,
@@ -115,7 +125,6 @@ export const PatientMeds = () => {
       return { rows, columns };
     }
 
-    console.log("patient", patient);
     if (!patient?.medication?.length) {
       return { rows: [], columns: [] };
     }
@@ -131,10 +140,11 @@ export const PatientMeds = () => {
       handleSeeAlternativeMeds
     );
   }, [
+    algoAlternativeMedications,
     alternativeMedications,
     handleSeeAlternativeMeds,
     onReplace,
-    patient,
+    patient?.medication,
     replacedMed?.medication,
   ]);
 
@@ -142,8 +152,6 @@ export const PatientMeds = () => {
     if (!patient?.reviews?.length) {
       return { rows: [], columns: [] };
     }
-
-    console.log("patient.review", patient.reviews);
 
     return getReviews(patient.reviews);
   }, [patient?.reviews]);
@@ -156,12 +164,29 @@ export const PatientMeds = () => {
     return <div>Loading...</div>;
   }
 
-  console.log({ rows, columns });
-
   return (
     <Box px="35px" width="95%">
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        gap="20px"
+      >
+        <Avatar
+          src={patient.imageUrl || "/assets/avatars/avatar-placeholder.png"}
+          sx={{
+            height: 80,
+            mb: 2,
+            width: 80,
+            cursor: "pointer",
+          }}
+        />
+        <Typography gutterBottom variant="h3">
+          {patient.fullName}'s Medication and Reviews
+        </Typography>
+      </Box>
       <form onSubmit={handleAddReview}>
-        <Header title="Add Review" subtitle="Add new review" />
+        <Header title="Add Child Review" subtitle="Add new review" />
 
         <Box display="grid" gap="30px">
           <TextField
@@ -226,8 +251,8 @@ export const PatientMeds = () => {
           <DataGrid
             rows={rows}
             columns={columns}
-            components={{ Toolbar: GridToolbar }}
-            getRowId={(row) => row._id}
+            // components={{ Toolbar: GridToolbar }}
+            // getRowId={(row) => row._id}
           />
         )}
         <br />
@@ -238,7 +263,7 @@ export const PatientMeds = () => {
           <DataGrid
             columns={reviewHistory.columns}
             rows={reviewHistory.rows}
-            components={{ Toolbar: GridToolbar }}
+            // components={{ Toolbar: GridToolbar }}
             getRowId={(row) => row._id}
           />
         )}
@@ -263,7 +288,7 @@ function getReviews(reviews) {
       {
         field: "content",
         headerName: "Content",
-        flex: 1,
+        minWidth: 200,
       },
       {
         field: "recognizedSymptoms",
@@ -275,12 +300,11 @@ function getReviews(reviews) {
 }
 function getMeds(medications, handleSeeAlternativeMeds) {
   return {
-    rows: medications,
+    rows: medications.map((m, i) => ({ ...m, id: i })),
     columns: [
       {
         field: "medication",
         headerName: "Medication Name",
-        minWidth: 150,
       },
       {
         field: "condition",
@@ -301,24 +325,70 @@ function getMeds(medications, handleSeeAlternativeMeds) {
         field: "actions",
         headerName: "Actions",
         flex: 1,
-        renderCell: (data) => (
-          <Button
-            size="small"
-            color="secondary"
-            variant="contained"
-            onClick={() => handleSeeAlternativeMeds(data.row)}
-          >
-            See Alternatives
-          </Button>
-        ),
+        renderCell: (data) => {
+          if (data.row.endedAt) {
+            return null;
+          }
+          return (
+            <Button
+              size="small"
+              color="secondary"
+              variant="contained"
+              onClick={() => handleSeeAlternativeMeds(data.row)}
+            >
+              See Alternatives
+            </Button>
+          );
+        },
       },
     ],
   };
 }
 
+function getAlgoAlternativeMeds(
+  alternativeMedications,
+  onReplace,
+  replacedMed
+) {
+  const rows = alternativeMedications.map((med) => ({
+    ...med,
+    id: med.medication,
+    score: Number(med["score"]).toFixed(2),
+  }));
+  const columns = [
+    {
+      field: "medication",
+      headerName: "Medication Name",
+      flex: 1,
+    },
+    {
+      field: "score",
+      headerName: "Score",
+      flex: 1,
+    },
+    {
+      field: "actions",
+      headerName: "Actions",
+      flex: 1,
+      renderCell: (data) => (
+        <Button
+          color="secondary"
+          variant="contained"
+          onClick={() => onReplace(data.row)}
+          disabled={replacedMed === data.row}
+        >
+          Replace
+        </Button>
+      ),
+    },
+  ];
+  return { rows, columns };
+}
+
 function getAlternativeMeds(alternativeMedications, onReplace, replacedMed) {
   const rows = alternativeMedications.map((med) => ({
     id: med["Medication/drug name"],
+    score: med["score"],
     sideEffects: med["Problem/side effects"].join(", "),
     ...med,
   }));

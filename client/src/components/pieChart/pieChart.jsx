@@ -30,10 +30,11 @@ const styles = {
   arcLinkLabelsColor: { from: "color" },
 };
 
-const PieChart = ({ data = mockPieData }) => {
+const PieChart = ({ data = mockPieData, showLegend = true }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   console.log(data);
+
   return (
     <ResponsivePie
       data={data}
@@ -46,7 +47,7 @@ const PieChart = ({ data = mockPieData }) => {
         from: "color",
         modifiers: [["darker", 2]],
       }}
-      legends={legends}
+      legends={showLegend ? legends : undefined}
     />
   );
 };

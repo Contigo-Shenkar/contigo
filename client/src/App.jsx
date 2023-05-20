@@ -22,6 +22,7 @@ import { PatientMeds } from "./components/patientPage/patient-meds/patient-meds"
 import { Register } from "./pages/register/register";
 import { Login } from "./pages/login/login";
 import Dashboard from "./pages/dashboard";
+import { Reviews } from "./pages/reviews/reviews";
 
 const fullPages = ["/login", "/", "/register"];
 
@@ -46,6 +47,7 @@ const App = () => {
               <Route path="/" element={<Login />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/reviews" element={<Reviews />} />
               <Route
                 path="/predict"
                 element={

@@ -1,7 +1,6 @@
 import Header from "../header/Header";
 import { tokens } from "../../theme";
 import { Link, useParams } from "react-router-dom";
-// import {alertNotification} from "../alert/alertNotification";
 import { useGetPatientByIdQuery } from "../../features/apiSlice";
 
 import {
@@ -15,7 +14,6 @@ import {
   Button,
   CardActions,
 } from "@mui/material";
-import { PatientMeds } from "./patient-meds/patient-meds";
 import { STATUSES, categoryPerActivity } from "../patientTasks/tasks";
 import { BarChart } from "../barChart/BarChart";
 import { useEffect, useMemo } from "react";
@@ -186,7 +184,7 @@ export const PatientPage = () => {
   console.log("patient", patient);
 
   return (
-    <Box m="20px">
+    <Box m="20px" p="20px" pb="50px">
       <Header
         title={`${patient.data.fullName} personal information`}
         subtitle="Welcome to your personal card"
@@ -329,8 +327,15 @@ export const PatientPage = () => {
             </CardContent>
           </Card>
         </Grid>
+      </Grid>
+      <Grid
+        container
+        spacing={3}
+        sx={{ justifyContent: "center", alignItems: "center" }}
+        pt={3}
+      >
         <Grid item>
-          <Card sx={cardStyles}>
+          <Card sx={{ ...cardStyles, width: "600px" }}>
             <CardContent>
               <Box
                 height="250px"
@@ -341,7 +346,7 @@ export const PatientPage = () => {
                   Task distribution by Category
                 </Typography>
                 <Box mt="-20px" height="250px">
-                  <PieChart data={pieChartData} />
+                  <PieChart data={pieChartData} showLegend={false} />
                 </Box>
               </Box>
             </CardContent>
@@ -351,24 +356,6 @@ export const PatientPage = () => {
 
       <Box m="40px 0 0 40px"></Box>
 
-      {openTasksInTheLast7Days.length > 0 ? (
-        <Box marginBottom={4} p={3}>
-          <Typography variant="h3" gutterBottom>
-            Open tasks
-          </Typography>
-
-          <Typography variant="h5" p={3}>
-            {openTasksInTheLast7Days.map((task, i) => {
-              return <li key={task._id + i}>{task.task}</li>;
-            })}
-          </Typography>
-
-          <Typography variant="h5" p={3}>
-            Patient failed tasks typical to the following diagnoses:
-            <div>{[...failedTasksTypes].join(", ")}</div>
-          </Typography>
-        </Box>
-      ) : null}
       <Insights
         insights={{
           completedBonusLast3Days,
@@ -379,9 +366,9 @@ export const PatientPage = () => {
             Date.now()
           ),
           stage: patient.data.stage,
+          failedTasksTypes,
         }}
       />
-      <PatientMeds patient={patient.data} />
     </Box>
   );
 };

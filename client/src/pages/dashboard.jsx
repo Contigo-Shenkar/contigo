@@ -358,9 +358,9 @@ const Dashboard = () => {
               color={themeColors.greenAccent[500]}
               sx={{ mt: "15px" }}
             >
-              $48,352 revenue generated
+              
             </Typography>
-            <Typography>Includes extra misc expenditures and costs</Typography>
+            <Typography></Typography>
           </Box>
         </Box>
         <Box

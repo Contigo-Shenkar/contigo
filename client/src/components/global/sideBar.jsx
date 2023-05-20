@@ -161,8 +161,8 @@ const Sidebar = () => {
             />
             <Item
               title="Children Reviews"
-              to="/tokens"
-              icon={<TableChartIcon />}
+              to="/reviews"
+              icon={<ReceiptOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
             />
@@ -174,7 +174,6 @@ const Sidebar = () => {
               selected={selected}
               setSelected={setSelected}
             />
-            
 
             <Typography
               variant="h6"
@@ -191,7 +190,6 @@ const Sidebar = () => {
               selected={selected}
               setSelected={setSelected}
             />
-           
           </Box>
         </Menu>
       </ProSidebar>

@@ -450,80 +450,8 @@ const PatientTasks = () => {
           key={(row) => row.id}
           columns={[...gridColumns, actionsCell]}
         />
-        {/* Total tokens calculation 
-        {/* Headline */}
-        <Grid item flex={1}>
-          <Header
-            title="Check Your Total Tokens"
-            subtitle="View your total token's based per a day,week,month"
-            mb={3}
-          />
-        </Grid>
-        <Grid item></Grid>
 
-        {/* Sum of one day */}
-        <Box display="flex" flexDirection="row" justifyContent="space-between">
-          <Box
-            width="400px"
-            height="400px"
-            backgroundColor={colors.primary[400]}
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-          >
-            <StatBox
-              title="Total token per a Day"
-              subtitle="Choose Date:"
-              progress="0.75"
-              increase="+14%"
-              icon={
-                <TodayIcon
-                  sx={{ color: colors.greenAccent[600], fontSize: "30px" }}
-                />
-              }
-            />
-          </Box>
-          <Box
-            width="400px"
-            height="400px"
-            backgroundColor={colors.primary[400]}
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-          >
-            <StatBox
-              title="Total tokens per a Week"
-              subtitle="Choose Date:"
-              progress="0.50"
-              increase="+21%"
-              icon={
-                <DateRangeIcon
-                  sx={{ color: colors.greenAccent[600], fontSize: "30px" }}
-                />
-              }
-            />
-          </Box>
-          <Box
-            width="400px"
-            height="400px"
-            backgroundColor={colors.primary[400]}
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-          >
-            <StatBox
-              title="Total token per a Month"
-              subtitle="Choose Date:"
-              progress="0.90"
-              increase="+9%"
-              icon={
-                <CalendarMonthIcon
-                  sx={{ color: colors.greenAccent[600], fontSize: "30px" }}
-                />
-              }
-            />
-          </Box>
-        </Box>
+        
       </Box>
     </Container>
   );

@@ -8,7 +8,7 @@ export const Insights = ({ insights }) => {
 
   return (
     <div>
-      <Header title="Insights" />
+      <Header title="Child Behavioral Insights" />
       <Box display="flex" gap="20px">
         {insights.completedBonusLast3Days === 0 ? (
           <InsightCard title="No bonus tasks was completed in the last 3 days" />
@@ -34,6 +34,12 @@ export const Insights = ({ insights }) => {
             } days at current stage, which is more than the average of ${
               daysPerStage[insights.stage]
             } days`}
+          />
+        ) : null}
+        {insights.failedTasksTypes.size > 0 ? (
+          <InsightCard
+            title={`Patient failed tasks typical to the following diagnoses:
+            ${[...insights.failedTasksTypes].join(", ")}`}
           />
         ) : null}
       </Box>
