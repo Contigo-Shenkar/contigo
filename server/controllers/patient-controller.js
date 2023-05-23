@@ -1,12 +1,7 @@
 import { STATUSES } from "../helpers/tasks.js";
 import patientModel from "../models/patientModel.js";
 import mongoose from "mongoose";
-
-// import DiagnosesAndMeds from "../helpers/diagnoses-and-meds.json" assert { type: "json" };
-import { createRequire } from 'node:module';
-const require = createRequire(import.meta.url);
-const DiagnosesAndMeds = require('../helpers/diagnoses-and-meds.json');
-
+import DiagnosesAndMeds from "../helpers/diagnoses-and-meds.json" assert { type: "json" };
 import { checkPatientStage } from "./helpers/check-stage.js";
 import fetch from "node-fetch";
 
@@ -16,35 +11,6 @@ export const getPatientsList = async (req, res) => {
     res.status(200).json({ data: todoList });
   } catch (error) {
     res.status(401).json({ message: error.message });
-  }
-};
-export const getPatientByIdMinimal = async (req, res) => {
-  const { id } = req.params;
-  try {
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res
-        .status(404)
-        .json({ message: `No patient exists with id:${id}` });
-    }
-
-    const patient = await patientModel.findById(id).select({
-      _id: 1,
-      fullName: 1,
-      id: 1,
-      age: 1,
-      tokens: 1,
-      stage: 1
-    });
-
-    if (!patient) {
-      return res
-        .status(404)
-        .json({ message: `No patient exists with id:${id}` });
-    }
-
-    res.status(200).json(patient);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
   }
 };
 

@@ -1,7 +1,6 @@
 import express from "express";
 import {
   getPatientsList,
-  getPatientByIdMinimal,
   addNewPatient,
   updatePatient,
   deletePatient,
@@ -24,7 +23,6 @@ const router = express.Router();
 
 router.get("/", getPatientsList);
 router.get("/:id", getPatientById);
-router.get("/minimal/:id", getPatientByIdMinimal);
 router.post("/", addNewPatient);
 router.post("/:id/reviews", addReview);
 router.post("/:id/tasks", addTask);

@@ -89,6 +89,7 @@ export default patientModel;
   // patients[0].stageStartDate = new Date("2021-06-01T00:00:00.000Z");
   for (let index = 0; index < patients.length; index++) {
     const patient = patients[index];
+    console.log("patient", patient);
 
     // patient.imageUrl = "/assets/avatars/" + files[index];
 
