@@ -14,7 +14,10 @@ import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
 import Header from "../header/Header";
 import { useTheme } from "@mui/material";
-import { useGetPatientsQuery } from "../../features/apiSlice";
+import {
+  useGetPatientsQuery,
+  useTokenLoginQuery,
+} from "../../features/apiSlice";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import WarningIcon from "@mui/icons-material/Warning";
@@ -30,10 +33,12 @@ const TokensCalculation = () => {
   const { data: patients, isLoading, isError } = useGetPatientsQuery();
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const { data: userData } = useTokenLoginQuery();
+  const user = userData?.user;
   //////////////////////////////////////////////////
 
   const patientsWithCompletedTasksPercent = analyzeTasksCompletion(
-    patients?.data,
+    patients?.data.filter((p) => String(p.id).includes(user.childId)),
     date,
     stage
   );

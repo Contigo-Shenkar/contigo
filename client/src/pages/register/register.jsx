@@ -3,20 +3,18 @@ import { Form, Input, Checkbox } from "antd";
 import spaceship from "../assets/register-spaceship.svg";
 import logo from "../assets/logo.svg";
 import styles from "./register.module.scss";
-import {
-  getRequrieRules,
-  getStrongPasswordRules,
-  getValidateEmailRules,
-} from "../../helpers/forms";
+import { getRequrieRules } from "../../helpers/forms";
 import Button from "../../components/button/button";
 import { Link, useNavigate } from "react-router-dom";
 import { useRegisterMutation } from "../../features/authSlice";
 import { useEffect } from "react";
+import { toast } from "react-toastify";
 
 export function Register() {
   const [email, setEmail] = useState(null);
   const [pass, setPass] = useState(null);
   const [imageUrl, setImageUrl] = useState("");
+  const [childId, setChildID] = useState("");
   const [fName, setFName] = useState(null);
   const [lName, setLName] = useState(null);
   const [terms, setTerms] = useState(false);
@@ -28,7 +26,7 @@ export function Register() {
   ] = useRegisterMutation({});
 
   const formSubmitHandler = async (data) => {
-    await register({ email, fName, lName, pass, terms, imageUrl });
+    await register({ email, fName, lName, pass, terms, imageUrl, childId });
   };
 
   useEffect(() => {
@@ -38,6 +36,13 @@ export function Register() {
       navigate("/dashboard");
     }
   }, [data, navigate, isRegisterSuccess]);
+
+  useEffect(() => {
+    if (isRegisterError) {
+      console.log("isRegisterError", isRegisterError);
+      toast.error(isRegisterError.data.message);
+    }
+  }, [isRegisterError]);
 
   return (
     <div
@@ -88,6 +93,16 @@ export function Register() {
                 value={imageUrl}
               />
             </Form.Item>
+            <Form.Item name="childId" label="Child ID number">
+              <Input
+                placeholder="Child ID number"
+                size="large"
+                type="text"
+                className="bottom-1  lg:py-3  sm:py-2 py-1 border-black"
+                onChange={(e) => setChildID(e.target.value)}
+                value={childId}
+              />
+            </Form.Item>
             <Form.Item
               name="email"
               label="Email"
@@ -132,7 +147,7 @@ export function Register() {
                 I read and agree all statements in Terms and Conditions
               </Checkbox>
             </Form.Item>
-            <Button htmlType="submit">Sign in</Button>
+            <Button htmlType="submit">Register</Button>
           </Form>
         </div>
         <div className="flex gap-8 justify-center mt-10">

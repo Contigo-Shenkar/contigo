@@ -9,11 +9,10 @@ import TokenIcon from "@mui/icons-material/Token";
 import VaccinesIcon from "@mui/icons-material/Vaccines";
 //import charts for dashboard
 import ProgressCircle from "../components/progressCircle/ProgressCircle";
-import { BarChart } from "../components/barChart/BarChart";
 import LineChart from "../components/lineChart/lineChart";
 import StatBox from "../components/statBox/StatBox";
 import PieChart from "../components/pieChart/pieChart";
-import { useGetPatientsQuery } from "../features/apiSlice";
+import { useGetPatientsQuery, useTokenLoginQuery } from "../features/apiSlice";
 import { useEffect, useMemo, useState } from "react";
 import { colors } from "../helpers/colors";
 import { getDayAndMonth, getPast7Days, isLastXDays } from "../helpers/dates";
@@ -26,6 +25,8 @@ const Dashboard = () => {
   const themeColors = tokens(theme.palette.mode);
   const { data, isLoading } = useGetPatientsQuery();
   const patients = data?.data;
+  const { data: userData } = useTokenLoginQuery();
+  const user = userData?.user;
 
   useEffect(() => {
     const recentlyVisited =
@@ -36,8 +37,12 @@ const Dashboard = () => {
   }, []);
 
   const dashboardData = useMemo(() => {
-    if (!patients) return {};
+    if (!patients || !user) return {};
     console.log(patients);
+
+    const filteredPatient = patients.filter((p) =>
+      String(p.id).includes(user.childId)
+    );
 
     const last7days = getPast7Days();
     const stages = {};
@@ -57,7 +62,7 @@ const Dashboard = () => {
     let newPatientsThisWeek = 0;
     let newReviewsThisWeek = 0;
 
-    for (const patient of patients) {
+    for (const patient of filteredPatient) {
       // stages
       if (stages[patient.stage]) {
         stages[patient.stage] += 1;
@@ -132,7 +137,7 @@ const Dashboard = () => {
         completedTasksPerMonth
       ),
     };
-  }, [patients]);
+  }, [patients, user]);
   console.log("dashboardData", dashboardData);
 
   if (isLoading) {
@@ -147,6 +152,14 @@ const Dashboard = () => {
       <Box display="flex" justifyContent="space-between" alignItems="center">
         <Header title="Dashboard" subtitle="Welcome to your dashboard" />
       </Box>
+
+      {user.childId ? (
+        <Box my={2}>
+          <Typography>
+            Showing data for patient with id: {user.childId}
+          </Typography>
+        </Box>
+      ) : null}
 
       <Box
         display="grid"
@@ -236,7 +249,7 @@ const Dashboard = () => {
 
         {/* ROW 2 */}
         <Box
-          gridColumn="span 8"
+          gridColumn={user.childId ? "span 12" : "span 8"}
           gridRow="span 2"
           backgroundColor={themeColors.primary[400]}
         >
@@ -274,71 +287,73 @@ const Dashboard = () => {
             />
           </Box>
         </Box>
-        <Box
-          gridColumn="span 4"
-          gridRow="span 2"
-          backgroundColor={themeColors.primary[400]}
-          overflow="auto"
-        >
+        {!user.childId ? (
           <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            borderBottom={`4px solid ${themeColors.primary[500]}`}
-            colors={themeColors.grey[100]}
-            p="15px"
+            gridColumn="span 4"
+            gridRow="span 2"
+            backgroundColor={themeColors.primary[400]}
+            overflow="auto"
           >
-            <Typography
-              color={themeColors.grey[100]}
-              variant="h5"
-              fontWeight="600"
+            <Box
+              display="flex"
+              justifyContent="space-between"
+              alignItems="center"
+              borderBottom={`4px solid ${themeColors.primary[500]}`}
+              colors={themeColors.grey[100]}
+              p="15px"
             >
-              Recently Visited profiles
-            </Typography>
-          </Box>
-          {recentlyVisited.map((patientId, i) => {
-            const patient = patients.find((p) => p._id === patientId);
-            console.log("patient", patient);
-            if (!patient) return null;
-            return (
-              <Box
-                key={patientId}
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                borderBottom={`4px solid ${themeColors.primary[500]}`}
-                p="15px"
+              <Typography
+                color={themeColors.grey[100]}
+                variant="h5"
+                fontWeight="600"
               >
-                <Box>
-                  <Typography color={themeColors.grey[100]}>
-                    {patient.fullName}
-                  </Typography>
-                </Box>
-
-                <Link
-                  to={`/patients/${patientId}`}
-                  style={{
-                    color: "black",
-                    textDecoration: "none",
-                    fontWeight: "600",
-                  }}
+                Recently Visited profiles
+              </Typography>
+            </Box>
+            {recentlyVisited.map((patientId, i) => {
+              const patient = patients.find((p) => p._id === patientId);
+              console.log("patient", patient);
+              if (!patient) return null;
+              return (
+                <Box
+                  key={patientId}
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  borderBottom={`4px solid ${themeColors.primary[500]}`}
+                  p="15px"
                 >
-                  <Box
-                    backgroundColor={themeColors.greenAccent[500]}
-                    p="5px 10px"
-                    borderRadius="4px"
-                  >
-                    {">>>"}
+                  <Box>
+                    <Typography color={themeColors.grey[100]}>
+                      {patient.fullName}
+                    </Typography>
                   </Box>
-                </Link>
-              </Box>
-            );
-          })}
-        </Box>
+
+                  <Link
+                    to={`/patients/${patientId}`}
+                    style={{
+                      color: "black",
+                      textDecoration: "none",
+                      fontWeight: "600",
+                    }}
+                  >
+                    <Box
+                      backgroundColor={themeColors.greenAccent[500]}
+                      p="5px 10px"
+                      borderRadius="4px"
+                    >
+                      {">>>"}
+                    </Box>
+                  </Link>
+                </Box>
+              );
+            })}
+          </Box>
+        ) : null}
 
         {/* ROW 3 */}
         <Box
-          gridColumn="span 4"
+          gridColumn="span 6"
           gridRow="span 2"
           backgroundColor={themeColors.primary[400]}
           p="30px"
@@ -358,12 +373,12 @@ const Dashboard = () => {
               color={themeColors.greenAccent[500]}
               sx={{ mt: "15px" }}
             >
-              
+              $48,352 revenue generated
             </Typography>
-            <Typography></Typography>
+            <Typography>Includes extra misc expenditures and costs</Typography>
           </Box>
         </Box>
-        <Box
+        {/* <Box
           gridColumn="span 4"
           gridRow="span 2"
           backgroundColor={themeColors.primary[400]}
@@ -388,9 +403,9 @@ const Dashboard = () => {
               indexBy="date"
             />
           </Box>
-        </Box>
+        </Box> */}
         <Box
-          gridColumn="span 4"
+          gridColumn="span 6"
           gridRow="span 2"
           backgroundColor={themeColors.primary[400]}
           padding="30px"

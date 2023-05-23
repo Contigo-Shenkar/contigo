@@ -1,83 +1,45 @@
-import React, { useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import React, { useMemo } from "react";
+import { Link } from "react-router-dom";
 import {
-  useDeletePatientTaskMutation,
-  useGetPatientByIdQuery,
   useGetPatientsQuery,
-  useUpdateTaskStatusMutation,
+  useTokenLoginQuery,
 } from "../../features/apiSlice";
-import { useAddNewPatientTaskMutation } from "../../features/apiSlice";
 import { tokens } from "../../theme";
-import DoneIcon from "@mui/icons-material/Done";
 import { DataGrid } from "@mui/x-data-grid";
-import StatBox from "../../components/statBox/StatBox";
 
 // import icons
-import TodayIcon from "@mui/icons-material/Today";
-import PlayArrowIcon from "@mui/icons-material/PlayArrow";
-import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import DateRangeIcon from "@mui/icons-material/DateRange";
 
-import {
-  Box,
-  Button,
-  Container,
-  Grid,
-  Typography,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Select,
-  MenuItem,
-  FormControl,
-  useTheme,
-  Avatar,
-  Tooltip,
-  IconButton,
-  Autocomplete,
-  TextField,
-  InputLabel,
-  FormLabel,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
-  OutlinedInput,
-} from "@mui/material";
+import { Box, useTheme } from "@mui/material";
 
-import { toast } from "react-toastify";
 import Header from "../../components/header/Header";
-import {
-  STATUSES,
-  regularTasks,
-  taskCategories,
-} from "../../components/patientTasks/tasks";
-import { analyzeTasksCompletion } from "../../helpers/analyze-tasks";
-
-const ALL_STATUSES = "all-statuses";
 
 export const Reviews = () => {
   const { data, isLoading, isError } = useGetPatientsQuery();
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const patients = data?.data;
+  const { data: userData } = useTokenLoginQuery();
+  const user = userData?.user;
   //////////////////////////////////////////////////
 
   const rows = useMemo(() => {
     if (!patients) return [];
-    return patients.map((patient) => {
-      // console.log(patient.reviews);
-      const lastReview = patient.reviews[patient.reviews.length - 1];
-      // console.log("lastReview", lastReview);
-      const lastReviewDate = lastReview?.createdAt || lastReview?.date || null;
-      return {
-        ...patient,
-        lastReviewDate: lastReviewDate
-          ? new Date(lastReviewDate).toLocaleDateString()
-          : "-",
-        lastReviewContent: lastReview?.content || "-",
-      };
-    });
+    return patients
+      .filter((p) => String(p.id).includes(user.childId))
+      .map((patient) => {
+        // console.log(patient.reviews);
+        const lastReview = patient.reviews[patient.reviews.length - 1];
+        // console.log("lastReview", lastReview);
+        const lastReviewDate =
+          lastReview?.createdAt || lastReview?.date || null;
+        return {
+          ...patient,
+          lastReviewDate: lastReviewDate
+            ? new Date(lastReviewDate).toLocaleDateString()
+            : "-",
+          lastReviewContent: lastReview?.content || "-",
+        };
+      });
   }, [patients]);
 
   //////////////////////////////////////////////////

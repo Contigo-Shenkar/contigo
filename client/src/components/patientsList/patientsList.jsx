@@ -1,5 +1,8 @@
 import React, { useState } from "react";
-import { useGetPatientsQuery } from "../../features/apiSlice";
+import {
+  useGetPatientsQuery,
+  useTokenLoginQuery,
+} from "../../features/apiSlice";
 import PatientRow from "./patient-row/patient-row";
 import { Container, Dialog, DialogContent, Box } from "@mui/material";
 import AddPatientForm from "../addPatientForm/addPatientForm";
@@ -8,6 +11,9 @@ import Header from "../header/Header";
 
 const PatientsList = () => {
   const { data: patients, isLoading, isError } = useGetPatientsQuery();
+  const { data: userData } = useTokenLoginQuery();
+  const user = userData?.user;
+  console.log("user", user);
   const [open, setOpen] = useState(false);
 
   const handleOpen = () => {
@@ -26,6 +32,8 @@ const PatientsList = () => {
     return <div>Error fetching tasks</div>;
   }
 
+  console.log(patients.data);
+
   return (
     <Container fixed>
       <Box display="flex" justifyContent="space-between" alignItems="center">
@@ -40,9 +48,11 @@ const PatientsList = () => {
           <AddPatientForm />
         </DialogContent>
       </Dialog>
-      {patients.data.map((patient, index) => (
-        <PatientRow key={index} patient={patient} />
-      ))}
+      {patients.data
+        .filter((p) => String(p.id).includes(user.childId))
+        .map((patient, index) => (
+          <PatientRow key={index} patient={patient} />
+        ))}
     </Container>
   );
 };
