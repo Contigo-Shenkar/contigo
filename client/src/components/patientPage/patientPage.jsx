@@ -27,6 +27,9 @@ import {
 } from "../../helpers/dates";
 import PieChart from "../pieChart/pieChart";
 import { Insights } from "./insights/insights";
+import { daysPerStage } from "../../helpers/stages.mjs";
+import { IMAGE_PLACEHOLDER } from "../../helpers/images";
+import ProgressCircle from "../progressCircle/ProgressCircle";
 
 function updatedRecentlyVisited(patientId) {
   const recentlyVisited =
@@ -57,91 +60,19 @@ export const PatientPage = () => {
   }, [patientId]);
 
   const {
-    openTasksInTheLast7Days,
-    failedTasksTypes,
+    // openTasksInTheLast7Days,
+    // failedTasksTypes,
     completedTasksInTheLast7Days,
     last7days,
     completedAllTimeCount,
     completedTodayCount,
     pieChartData,
-    completedRegularLast3Days,
-    completedBonusLast3Days,
-    availableStageTasks,
-  } = useMemo(() => {
-    if (!patient?.data.tasks) return [];
-
-    const last7days = getPast7Days();
-
-    let completedAllTimeCount = 0;
-    let completedTodayCount = 0;
-    let completedRegularLast3Days = 0;
-    let completedBonusLast3Days = 0;
-    const availableStageTasks = { bonus: 0, regular: 0 };
-    const openTasksInTheLast7Days = [];
-    const completedTasksInTheLast7Days = [];
-    const failedTasksTypes = new Set();
-
-    const categoryCount = {};
-
-    for (const t of patient?.data.tasks) {
-      const category = categoryPerActivity.get(t.task);
-      categoryCount[category] = categoryCount[category] || 0 + 1;
-
-      if (t.status === STATUSES.IN_PROGRESS && isPast7days(t.createdAt)) {
-        openTasksInTheLast7Days.push(t);
-        failedTasksTypes.add(t.taskType);
-      } else if (t.status === STATUSES.COMPLETED) {
-        completedAllTimeCount++;
-
-        if (!t.hidden) {
-          completedTasksInTheLast7Days.push(t);
-          if (isPast7days(t.completedAt)) {
-            const key = getDayAndMonth(t.completedAt);
-            last7days[key]++;
-
-            if (isLastXDays(t.completedAt, 3)) {
-              if (t.tokenType === "bonus") {
-                completedBonusLast3Days++;
-              } else {
-                completedRegularLast3Days++;
-              }
-
-              if (isToday(new Date(t.completedAt))) {
-                completedTodayCount++;
-              }
-            }
-          }
-        }
-      }
-
-      if (!t.hidden) {
-        availableStageTasks[t.tokenType]++;
-      }
-    }
-
-    const pieChartData = [];
-    for (const [category, count] of Object.entries(categoryCount)) {
-      pieChartData.push({
-        id: category,
-        label: category,
-        value: count,
-        // color: colors[category],
-      });
-    }
-
-    return {
-      failedTasksTypes,
-      openTasksInTheLast7Days,
-      completedTasksInTheLast7Days,
-      last7days,
-      completedAllTimeCount,
-      completedTodayCount,
-      pieChartData,
-      completedRegularLast3Days,
-      completedBonusLast3Days,
-      availableStageTasks,
-    };
-  }, [patient]);
+    // completedRegularLast3Days,
+    // completedBonusLast3Days,
+    // availableStageTasks,
+    insights,
+    daysAtStage,
+  } = useMemo(() => getInsights(patient), [patient]);
 
   const reason = useMemo(() => {
     if (!patient?.data?.reasons) return "No reason given for this patient";
@@ -168,7 +99,7 @@ export const PatientPage = () => {
 
   const cardStyles = {
     width: 400,
-    height: 250,
+    height: 300,
     borderRadius: 10,
     backgroundColor: colors.blueAccent[700],
   };
@@ -181,8 +112,7 @@ export const PatientPage = () => {
     return <div>Error fetching tasks</div>;
   }
 
-  console.log("patient", patient);
-
+  const fontSizeSx = { fontSize: "16px" };
   return (
     <Box m="20px" p="20px" pb="50px">
       <Header
@@ -237,30 +167,59 @@ export const PatientPage = () => {
                 textAlign: "center",
               }}
             >
-              <Button>
-                <Avatar
-                  src={
-                    patient.data.imageUrl ||
-                    "/assets/avatars/avatar-placeholder.png"
-                  }
-                  sx={{
-                    height: 80,
-                    mb: 2,
-                    width: 80,
-                    cursor: "pointer",
-                  }}
-                />
-              </Button>
-              <Typography gutterBottom variant="h3" textTransform="uppercase">
-                {patient.data.fullName}
-              </Typography>
-              <Typography color="text.secondary" variant="body">
+              <Box
+                display={"flex"}
+                justifyContent={"center"}
+                alignItems={"center"}
+                gap="20px"
+              >
+                <Box>
+                  <Button>
+                    <Avatar
+                      src={patient.data.imageUrl || IMAGE_PLACEHOLDER}
+                      sx={{
+                        height: 80,
+                        mb: 2,
+                        width: 80,
+                        cursor: "pointer",
+                      }}
+                    />
+                  </Button>
+                  <Typography
+                    gutterBottom
+                    variant="h3"
+                    textTransform="uppercase"
+                  >
+                    {patient.data.fullName}
+                  </Typography>
+                </Box>
+                <Box
+                  display={"flex"}
+                  justifyContent={"center"}
+                  alignItems={"center"}
+                  flexDirection={"column"}
+                >
+                  <ProgressCircle
+                    progress={daysAtStage / daysPerStage[patient.data.stage]}
+                  />
+                  <Typography
+                    gutterBottom
+                    variant="p"
+                    textTransform="uppercase"
+                  >
+                    Time at stage <br /> {daysAtStage} /{" "}
+                    {daysPerStage[patient.data.stage]} days
+                    <br />
+                  </Typography>
+                </Box>
+              </Box>
+              <Typography color="text.secondary" sx={fontSizeSx}>
                 ID: {patient.data.id}
               </Typography>
-              <Typography color="text.secondary" variant="body">
+              <Typography color="text.secondary" sx={fontSizeSx}>
                 Diagnoses: {patient.data.diagnosis.join(", ")}
               </Typography>
-              <Typography color="text.secondary" variant="body">
+              <Typography color="text.secondary" sx={fontSizeSx}>
                 Medications:{" "}
                 {patient.data.medication
                   .map(({ medication }) => medication)
@@ -356,21 +315,175 @@ export const PatientPage = () => {
 
       <Box m="40px 0 0 40px"></Box>
 
-      <Insights
-        insights={{
-          completedBonusLast3Days,
-          completedRegularLast3Days,
-          availableStageTasks,
-          daysAtStage: getDateDiffInDays(
-            new Date(patient.data.stageStartDate).getTime(),
-            Date.now()
-          ),
-          stage: patient.data.stage,
-          failedTasksTypes,
-        }}
-      />
+      <Insights insights={insights} />
     </Box>
   );
 };
 
 export default PatientPage;
+
+export const getInsights = (patient) => {
+  if (!patient?.data.tasks) return [];
+
+  const last7days = getPast7Days();
+
+  let completedAllTimeCount = 0;
+  let completedTodayCount = 0;
+  let completedRegularLast3Days = 0;
+  let completedBonusLast3Days = 0;
+  let completedBonusThisStage = 0;
+  const availableStageTasks = { bonus: 0, regular: 0 };
+  const openTasksInTheLast7Days = [];
+  const completedTasksInTheLast7Days = [];
+  const failedTasksTypes = new Set();
+
+  const categoryCount = {};
+
+  for (const t of patient?.data.tasks) {
+    const category = categoryPerActivity.get(t.task);
+    categoryCount[category] = categoryCount[category] || 0 + 1;
+
+    if (t.status === STATUSES.IN_PROGRESS && isPast7days(t.createdAt)) {
+      openTasksInTheLast7Days.push(t);
+      failedTasksTypes.add(t.taskType);
+    } else if (t.status === STATUSES.COMPLETED) {
+      completedAllTimeCount++;
+
+      if (!t.hidden) {
+        completedTasksInTheLast7Days.push(t);
+        if (isPast7days(t.completedAt)) {
+          const key = getDayAndMonth(t.completedAt);
+          last7days[key]++;
+
+          if (isLastXDays(t.completedAt, 3)) {
+            if (t.tokenType === "bonus") {
+              completedBonusLast3Days++;
+            } else {
+              completedRegularLast3Days++;
+            }
+
+            if (isToday(new Date(t.completedAt))) {
+              completedTodayCount++;
+            }
+          }
+        }
+      }
+    }
+
+    if (!t.hidden) {
+      availableStageTasks[t.tokenType]++;
+
+      if (t.tokenType === "bonus" && t.status === STATUSES.COMPLETED) {
+        completedBonusThisStage++;
+      }
+    }
+  }
+
+  const pieChartData = [];
+  for (const [category, count] of Object.entries(categoryCount)) {
+    pieChartData.push({
+      id: category,
+      label: category,
+      value: count,
+      // color: colors[category],
+    });
+  }
+
+  const insights = [];
+  if (completedBonusLast3Days === 0) {
+    insights.push(
+      <BadInsight>No bonus tasks was completed in the last 3 days</BadInsight>
+    );
+  }
+
+  const daysAtStage = getDateDiffInDays(
+    new Date(patient.data.stageStartDate).getTime(),
+    Date.now()
+  );
+
+  const finishedBonusPercent =
+    completedBonusThisStage / availableStageTasks.bonus;
+  if (
+    finishedBonusPercent < 0.8 &&
+    daysAtStage + daysPerStage[patient.data.stage] / 4 >=
+      daysPerStage[patient.data.stage]
+  ) {
+    insights.push(
+      <BadInsight>
+        Only
+        {Math.round(
+          (completedBonusThisStage / availableStageTasks.bonus) * 100
+        )}
+        % of bonus tasks was completed at current stage{" "}
+      </BadInsight>
+    );
+  } else if (finishedBonusPercent > 0.8) {
+    insights.push(
+      <span style={{ backgroundColor: "green", color: "white" }}>
+        Patient is doing great at current stage: {finishedBonusPercent * 100}%
+        of bonus tasks was completed
+      </span>
+    );
+  }
+
+  if (completedRegularLast3Days === 0) {
+    insights.push(
+      <BadInsight>No regular tasks was completed in the last 3 days</BadInsight>
+    );
+  }
+  if (availableStageTasks.regular < 2) {
+    insights.push(
+      <BadInsight>
+        Only {availableStageTasks.regular} regular tasks assigned at current
+        stage
+      </BadInsight>
+    );
+  }
+  if (availableStageTasks.bonus < 2) {
+    insights.push(
+      <BadInsight>
+        Only {availableStageTasks.bonus} bonus tasks assigned at current stage{" "}
+      </BadInsight>
+    );
+  }
+
+  if (daysAtStage > daysPerStage[patient.stage]) {
+    insights.push(
+      <BadInsight>
+        {" "}
+        Patient is already {insights.daysAtStage} days at current stage, which
+        is more than the average of {daysPerStage[insights.stage]} days
+      </BadInsight>
+    );
+  }
+
+  if (failedTasksTypes.size > 0) {
+    insights.push(
+      <BadInsight>
+        Patient failed tasks typical to the following diagnoses: $
+        {[...failedTasksTypes].join(", ")}
+      </BadInsight>
+    );
+  }
+
+  return {
+    failedTasksTypes,
+    openTasksInTheLast7Days,
+    completedTasksInTheLast7Days,
+    last7days,
+    completedAllTimeCount,
+    completedTodayCount,
+    pieChartData,
+    completedRegularLast3Days,
+    completedBonusLast3Days,
+    availableStageTasks,
+    insights,
+    daysAtStage,
+  };
+};
+
+const BadInsight = ({ children }) => {
+  return (
+    <span style={{ backgroundColor: "red", color: "white" }}>{children}</span>
+  );
+};

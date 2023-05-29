@@ -15,6 +15,7 @@ import { tokens } from "../../../theme";
 import { Link } from "react-router-dom";
 import { useDeletePatientMutation } from "../../../features/apiSlice";
 import { useMemo } from "react";
+import { IMAGE_PLACEHOLDER } from "../../../helpers/images";
 
 const PatientRow = ({ patient }) => {
   const theme = useTheme();
@@ -51,7 +52,7 @@ const PatientRow = ({ patient }) => {
     deletePatient(patient._id);
   };
 
-  const imageUrl = patient.imageUrl || "/assets/avatars/avatar-placeholder.png";
+  const imageUrl = patient.imageUrl || IMAGE_PLACEHOLDER;
 
   return (
     <Card style={{ marginBottom: "20px", background: colors.primary[400] }}>

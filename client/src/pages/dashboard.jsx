@@ -1,6 +1,7 @@
 import { Box, Typography, useTheme } from "@mui/material";
 import { tokens } from "../theme";
-import { mockTransactions } from "../data/mockData";
+import { toast } from "react-toastify";
+import { colors } from "../helpers/colors";
 import Header from "../components/header/Header";
 // import icons
 import FamilyRestroomIcon from "@mui/icons-material/FamilyRestroom";
@@ -14,10 +15,14 @@ import StatBox from "../components/statBox/StatBox";
 import PieChart from "../components/pieChart/pieChart";
 import { useGetPatientsQuery, useTokenLoginQuery } from "../features/apiSlice";
 import { useEffect, useMemo, useState } from "react";
-import { colors } from "../helpers/colors";
 import { getDayAndMonth, getPast7Days, isLastXDays } from "../helpers/dates";
+import { IMAGE_PLACEHOLDER } from "../helpers/images";
+
 import { Link } from "react-router-dom";
 import { getLineData } from "../components/lineChart/get-line-data";
+import { getInsights } from "../components/patientPage/patientPage";
+
+const thirdRowSpan = 3;
 
 const Dashboard = () => {
   const [recentlyVisited, setRecentlyVisited] = useState([]);
@@ -34,11 +39,12 @@ const Dashboard = () => {
     if (recentlyVisited.length > 0) {
       setRecentlyVisited(recentlyVisited);
     }
+
+    toast.error("Please notice important insights about your patients below.");
   }, []);
 
   const dashboardData = useMemo(() => {
     if (!patients || !user) return {};
-    console.log(patients);
 
     const filteredPatient = patients.filter((p) =>
       String(p.id).includes(user.childId)
@@ -57,12 +63,18 @@ const Dashboard = () => {
 
     let completedTasks = 0;
     let pastWeekCompletedTasks = 0;
+    const pastWeekCompletedTasksImages = new Set();
+    const bonusThisWeek = {};
     let currentlyInProgressTasks = 0;
     let totalTasks = 0;
     let newPatientsThisWeek = 0;
+    const newPatientsImages = [];
     let newReviewsThisWeek = 0;
+    const insights = [];
 
     for (const patient of filteredPatient) {
+      const { insights: patientInsights } = getInsights({ data: patient });
+      insights.push(patientInsights);
       // stages
       if (stages[patient.stage]) {
         stages[patient.stage] += 1;
@@ -78,6 +90,7 @@ const Dashboard = () => {
       // patients
       if (isLastXDays(patient.createdAt, 7)) {
         newPatientsThisWeek += 1;
+        newPatientsImages.push(patient.imageUrl);
       }
 
       patientPerMonth[new Date(patient.createdAt).getMonth() + 1] += 1;
@@ -96,6 +109,11 @@ const Dashboard = () => {
           completedTasks += 1;
           if (isLastXDays(task.completedAt, 7)) {
             pastWeekCompletedTasks += 1;
+            pastWeekCompletedTasksImages.add(patient.imageUrl);
+            if (task.tokenType === "bonus") {
+              bonusThisWeek[patient.imageUrl] =
+                (bonusThisWeek[patient.imageUrl] || 0) + 1;
+            }
           }
           completedTasksPerMonth[
             new Date(task.completedAt).getMonth() + 1
@@ -112,9 +130,17 @@ const Dashboard = () => {
         id: stage,
         label: "Stage " + stage,
         value: count,
-        color: colors[stagesPieData.length],
+        color: themeColors[stagesPieData.length],
       });
     }
+    const pastWeekCompletedTasksImagesArr = Array.from(
+      pastWeekCompletedTasksImages
+    );
+
+    const maxBonus = Math.max(Object.values(bonusThisWeek));
+    const bestBonusImage = Object.keys(bonusThisWeek).find(
+      (key) => bonusThisWeek[key] === maxBonus
+    );
 
     return {
       stages,
@@ -124,8 +150,11 @@ const Dashboard = () => {
       pastWeekCompletedTasks,
       currentlyInProgressTasks,
       newPatientsThisWeek,
+      newPatientsImages,
       newReviewsThisWeek,
       last7days,
+      pastWeekCompletedTasksImages: pastWeekCompletedTasksImagesArr,
+      bestBonusImage,
       patientPerMonth: getLineData(
         "New patient per month",
         colors[1],
@@ -136,17 +165,15 @@ const Dashboard = () => {
         colors[2],
         completedTasksPerMonth
       ),
+      insights,
     };
-  }, [patients, user]);
-  console.log("dashboardData", dashboardData);
+  }, [patients, themeColors, user]);
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
-  const tasksAvailableThisWeek =
-    dashboardData.currentlyInProgressTasks +
-    dashboardData.pastWeekCompletedTasks;
+  console.log({ dashboardData });
   return (
     <Box m="20px">
       <Box display="flex" justifyContent="space-between" alignItems="center">
@@ -197,7 +224,6 @@ const Dashboard = () => {
           <StatBox
             title={dashboardData.completedTasks}
             subtitle="Patients Stages Completed"
-            progress={dashboardData.completedTasks / dashboardData.totalTasks}
             increase=""
             icon={
               <TokenIcon
@@ -216,8 +242,8 @@ const Dashboard = () => {
           <StatBox
             title={dashboardData.newPatientsThisWeek}
             subtitle="New Patients This Week"
-            progress={dashboardData.newPatientsThisWeek / patients.length}
             increase=""
+            images={dashboardData.newPatientsImages}
             icon={
               <ChildCareIcon
                 sx={{ color: themeColors.greenAccent[600], fontSize: "26px" }}
@@ -233,12 +259,10 @@ const Dashboard = () => {
           justifyContent="center"
         >
           <StatBox
-            title={`${dashboardData.pastWeekCompletedTasks}/${tasksAvailableThisWeek}`}
-            subtitle="Tasks completed this week"
-            progress={
-              dashboardData.pastWeekCompletedTasks / tasksAvailableThisWeek
-            }
+            title={`Most bonus tasks`}
+            subtitle="Patient of the week"
             increase=""
+            images={[dashboardData.bestBonusImage]}
             icon={
               <FamilyRestroomIcon
                 sx={{ color: themeColors.greenAccent[600], fontSize: "26px" }}
@@ -278,6 +302,14 @@ const Dashboard = () => {
             </Box>
           </Box>
           <Box height="280px" m="-30px 0 0 -30px">
+            <Typography
+              variant="h5"
+              fontWeight="600"
+              p="30px 0 0 30px"
+              ml="30px"
+            >
+              Completed tasks per stages
+            </Typography>
             <LineChart
               isDashboard={true}
               data={[
@@ -312,7 +344,6 @@ const Dashboard = () => {
             </Box>
             {recentlyVisited.map((patientId, i) => {
               const patient = patients.find((p) => p._id === patientId);
-              console.log("patient", patient);
               if (!patient) return null;
               return (
                 <Box
@@ -352,14 +383,14 @@ const Dashboard = () => {
         ) : null}
 
         {/* ROW 3 */}
-        <Box
-          gridColumn="span 6"
-          gridRow="span 2"
+        {/* <Box
+          gridColumn="span 4"
+          gridRow={`span ${thirdRowSpan}`}
           backgroundColor={themeColors.primary[400]}
           p="30px"
         >
           <Typography variant="h5" fontWeight="600">
-            Faliure Stages
+            Notifications of children failures
           </Typography>
           <Box
             display="flex"
@@ -367,7 +398,7 @@ const Dashboard = () => {
             alignItems="center"
             mt="25px"
           >
-            <ProgressCircle size="125" />
+            <ProgressCircle size={100 * thirdRowSpan} />
             <Typography
               variant="h5"
               color={themeColors.greenAccent[500]}
@@ -377,7 +408,7 @@ const Dashboard = () => {
             </Typography>
             <Typography>Includes extra misc expenditures and costs</Typography>
           </Box>
-        </Box>
+        </Box> */}
         {/* <Box
           gridColumn="span 4"
           gridRow="span 2"
@@ -406,9 +437,9 @@ const Dashboard = () => {
         </Box> */}
         <Box
           gridColumn="span 6"
-          gridRow="span 2"
+          gridRow={`span ${thirdRowSpan}`}
           backgroundColor={themeColors.primary[400]}
-          padding="30px"
+          padding="20px 0 20px 20px"
         >
           <Typography
             variant="h5"
@@ -418,6 +449,82 @@ const Dashboard = () => {
             Stages of Patients
           </Typography>
           <PieChart data={dashboardData.stagesPieData} />
+        </Box>
+        <Box
+          gridColumn="span 6"
+          gridRow={`span ${thirdRowSpan + 1}`}
+          backgroundColor={themeColors.primary[400]}
+          overflow="auto"
+        >
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            borderBottom={`4px solid ${themeColors.primary[500]}`}
+            colors={themeColors.grey[100]}
+            p="15px"
+          >
+            <Typography
+              color={themeColors.grey[100]}
+              variant="h5"
+              fontWeight="600"
+            >
+              Last insights
+            </Typography>
+          </Box>
+          {dashboardData.insights.map((insights, index) => {
+            const patient = patients[index];
+            if (!patient) return null;
+            return (
+              <Box
+                key={index}
+                display="flex"
+                // justifyContent="space-between"
+                alignItems="center"
+                gap="20px"
+                borderBottom={`4px solid ${themeColors.primary[500]}`}
+                p="15px"
+              >
+                <Box
+                  display={"flex"}
+                  justifyContent={"center"}
+                  alignItems={"center"}
+                  gap={"10px"}
+                  width={"150px"}
+                >
+                  <img
+                    src={patient.imageUrl || IMAGE_PLACEHOLDER}
+                    alt="profile"
+                    style={{
+                      width: "50px",
+                      height: "50px",
+                      objectFit: "cover",
+                      objectPosition: "top",
+                      borderRadius: "50%",
+                      maxWidth: "unset",
+                      border: `3px solid ${themeColors.greenAccent[500]}`,
+                    }}
+                  />
+                  <Typography color={themeColors.grey[100]}>
+                    {patient.fullName}
+                  </Typography>
+                </Box>
+                <Box>
+                  {insights.map((insight, index) => {
+                    return (
+                      <Typography
+                        key={index}
+                        color={themeColors.redAccent[300]}
+                        sx={{ display: "block" }}
+                      >
+                        {insight}
+                      </Typography>
+                    );
+                  })}
+                </Box>
+              </Box>
+            );
+          })}
         </Box>
       </Box>
     </Box>

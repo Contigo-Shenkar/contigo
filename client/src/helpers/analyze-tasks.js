@@ -1,4 +1,5 @@
 import { STATUSES } from "../components/patientTasks/tasks";
+import { getDaysAtStage } from "./stages.mjs";
 
 export function analyzeTasksCompletion(patients, date = "all", stage = "all") {
   const analyzePatient = (patient) => {
@@ -82,6 +83,7 @@ export function analyzeTasksCompletion(patients, date = "all", stage = "all") {
       successStatus = "in progress";
     }
 
+    const daysAtStage = Math.round(getDaysAtStage(patient.stageStartDate));
     return {
       ...patient,
       completedTasks,
@@ -91,6 +93,7 @@ export function analyzeTasksCompletion(patients, date = "all", stage = "all") {
       successStatus,
       openTasksCount,
       isSuccessful,
+      daysAtStage,
     };
   };
 

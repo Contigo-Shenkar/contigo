@@ -4,11 +4,15 @@ import {
   FormControlLabel,
   FormLabel,
   InputLabel,
+  LinearProgress,
   MenuItem,
   OutlinedInput,
   Radio,
   RadioGroup,
+  Rating,
   Select,
+  Typography,
+  linearProgressClasses,
 } from "@mui/material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
@@ -24,6 +28,10 @@ import WarningIcon from "@mui/icons-material/Warning";
 import ErrorIcon from "@mui/icons-material/Error";
 import { toast } from "react-toastify";
 import { analyzeTasksCompletion } from "../../helpers/analyze-tasks";
+import "./task-monitoring.css";
+import { daysPerStage } from "../../helpers/stages.mjs";
+import styled from "@emotion/styled";
+import { renderProgress } from "./filled-quantity";
 
 const STAGES = 7;
 
@@ -59,7 +67,7 @@ const TokensCalculation = () => {
               width={40}
               src={params.row.imageUrl}
               alt={params.value}
-              style={{ borderRadius: "50px" }}
+              style={{ borderRadius: "50px", height: "40px" }}
             />
             <Link
               to={`/patients/${params.row._id}`}
@@ -74,6 +82,7 @@ const TokensCalculation = () => {
     {
       field: "completedRegularTasksPercent",
       headerName: "Completed Regular %",
+      description: "Accomplished percent of regular tokes",
       flex: 0.8,
       type: "number",
       align: "center",
@@ -82,6 +91,7 @@ const TokensCalculation = () => {
     {
       field: "completedBonusTasksPercent",
       headerName: "Completed Bonus %",
+      description: "Accomplished percent of bonus tokes",
       flex: 0.8,
       type: "number",
       align: "center",
@@ -89,23 +99,21 @@ const TokensCalculation = () => {
     },
     {
       field: "completedTasksPercent",
-      headerName: "Completed Tasks %",
+      headerName: "Total completed tasks",
+      description: "Accomplished percent out of total tokes",
       flex: 0.8,
       type: "number",
       align: "center",
-      valueFormatter: (params) => `${Math.round(params.value)}%`,
-    },
-    {
-      field: "openTasksCount",
-      headerName: "Open Tasks",
-      type: "number",
-      align: "center",
+      renderCell: renderProgress,
     },
     {
       field: "stage",
       headerName: "Stage",
       type: "number",
       align: "center",
+      renderCell: (params) => {
+        return <Rating name="read-only" value={params.row.stage} readOnly />;
+      },
     },
     {
       field: "completedTasks",
@@ -114,10 +122,51 @@ const TokensCalculation = () => {
       align: "center",
     },
     {
-      field: "successStatus",
-      headerName: "Success Status",
+      field: "daysAtStage",
+      headerName: "Days at Stage",
       align: "center",
       flex: 0.8,
+      renderCell: (params) => {
+        const percent = Number(
+          params.row.daysAtStage / daysPerStage[params.row.stage]
+        );
+        console.log(
+          "daysPerStage[params.row.stage]",
+          daysPerStage[params.row.stage]
+        );
+        console.log(" params.row.daysAtStage", params.row.daysAtStage);
+        console.log("percent", percent);
+        return (
+          <Box sx={{ width: "100%" }}>
+            <CustomizedProgressBars
+              thickness={32}
+              value={Math.min(percent * 100, 100)}
+              variant="determinate"
+              sx={{
+                [`&.${linearProgressClasses.colorPrimary}`]: {
+                  backgroundColor:
+                    theme.palette.grey[
+                      theme.palette.mode === "light" ? 200 : 800
+                    ],
+                },
+                [`& .${linearProgressClasses.bar}`]: {
+                  borderRadius: 5,
+                  backgroundColor:
+                    theme.palette.mode === "light" ? "#1a90ff" : "#308fe8",
+                },
+              }}
+            ></CustomizedProgressBars>
+            <Typography
+              level="body3"
+              fontWeight="xl"
+              textColor="common.white"
+              sx={{ mixBlendMode: "difference" }}
+            >
+              {params.row.daysAtStage} / {daysPerStage[params.row.stage]}
+            </Typography>
+          </Box>
+        );
+      },
     },
     {
       field: "alerts",
@@ -234,9 +283,20 @@ const TokensCalculation = () => {
       >
         <DataGrid
           rows={patientsWithCompletedTasksPercent}
+          // slotProps={{ row: { style: { backgroundColor: "red" } } }}
           key={(row) => row.id}
           columns={columns}
           components={{ Toolbar: GridToolbar }}
+          getRowClassName={(params) => {
+            console.log(params);
+            if (params.row.completedTasksPercent < 50) {
+              return "red";
+            } else if (params.row.completedTasksPercent < 70) {
+              return "yellow";
+            } else {
+              return "green";
+            }
+          }}
         />
       </Box>
     </Box>
@@ -244,3 +304,26 @@ const TokensCalculation = () => {
 };
 
 export default TokensCalculation;
+
+const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
+  height: 10,
+  borderRadius: 5,
+  [`&.${linearProgressClasses.colorPrimary}`]: {
+    backgroundColor:
+      theme.palette.grey[theme.palette.mode === "light" ? 200 : 800],
+  },
+  [`& .${linearProgressClasses.bar}`]: {
+    borderRadius: 5,
+    backgroundColor: theme.palette.mode === "light" ? "#1a90ff" : "#308fe8",
+  },
+}));
+
+// Inspired by the former Facebook spinners.
+
+function CustomizedProgressBars({ value }) {
+  return (
+    <Box sx={{ flexGrow: 1 }}>
+      <BorderLinearProgress variant="determinate" value={value} />
+    </Box>
+  );
+}
