@@ -89,7 +89,7 @@ export default patientModel;
   // patients[0].stageStartDate = new Date("2021-06-01T00:00:00.000Z");
   for (let index = 0; index < patients.length; index++) {
     const patient = patients[index];
-    console.log("patient", patient);
+    // console.log("patient", patient);
 
     // patient.imageUrl = "/assets/avatars/" + files[index];
 
@@ -103,7 +103,7 @@ export default patientModel;
     //   patient.stageStartDate = new Date();
     // }
 
-    await patient.save();
+    // await patient.save();
   }
   // for (const patient of patients) {
   // for (const task of patient.tasks) {

@@ -4,6 +4,10 @@ import mongoose from "mongoose";
 import DiagnosesAndMeds from "../helpers/diagnoses-and-meds.json" assert { type: "json" };
 import { checkPatientStage } from "./helpers/check-stage.js";
 import fetch from "node-fetch";
+import {
+  SIDE_EFFECT as SIDE_EFFECTS,
+  SIDE_EFFECTS_PERCENT,
+} from "./helpers/side-effects.js";
 
 export const getPatientsList = async (req, res) => {
   try {
@@ -69,6 +73,13 @@ const diagnosisKey = "Diagnosis/Condition";
 export const addReview = async (req, res) => {
   const { id } = req.params;
   const content = req.body.content.toLowerCase();
+  let detectedSideEffect = null;
+  for (const sideEffect of SIDE_EFFECTS) {
+    if (content.includes(sideEffect)) {
+      detectedSideEffect = sideEffect;
+      break;
+    }
+  }
 
   try {
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -85,24 +96,37 @@ export const addReview = async (req, res) => {
         medication: patient.medication[0].medication,
         condition: patient.medication[0].condition,
       };
-      console.log(reviewData);
       const response = await fetch("http://127.0.0.1:5000/predict", {
         method: "POST",
         body: JSON.stringify(reviewData),
         headers: { "Content-Type": "application/json" },
       });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch from algorithm." + (await res.text()));
+      }
       const algoData = await response.json();
       const alternativeMedications = [];
       for (const [medicationName, data] of Object.entries(algoData)) {
+        const se = SIDE_EFFECTS_PERCENT.find(
+          (sideEffect) => sideEffect.drugName === medicationName
+        );
+
+        const sePercent =
+          se && detectedSideEffect ? se[detectedSideEffect] : "";
+
         alternativeMedications.push({
           medication: medicationName,
           reviewCount: data["amount of reviews"],
           score: data.score,
+          sideEffectPercent: sePercent,
+          detectedSideEffect,
         });
       }
       alternativeMedications.sort((a, b) => b.score - a.score);
       res.json({ alternativeMedications });
       patient.reviews.push({ content });
+      await patient.save();
       return;
     }
 
@@ -159,7 +183,7 @@ export const addReview = async (req, res) => {
     res.json(patient);
   } catch (error) {
     console.log("error", error);
-    res.status(404).json({ message: "Something went wrong" });
+    res.status(500).json({ message: error.message });
   }
 };
 
