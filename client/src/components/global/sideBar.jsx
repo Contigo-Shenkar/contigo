@@ -188,7 +188,7 @@ const Sidebar = () => {
             />
 
             <Item
-              title="Tokens Calculation"
+              title="Patients Monitoring"
               to="/tokensCalculation"
               icon={<FunctionsIcon />}
               selected={selected}

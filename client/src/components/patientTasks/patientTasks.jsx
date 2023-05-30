@@ -110,6 +110,9 @@ const PatientTasks = () => {
       id: patientId,
     });
     handleClose();
+    toast.success(
+      "Task added successfully. Patient is required to have at least 8 regular tasks and at least 10 bonus tasks."
+    );
   };
 
   const handleDeleteTask = async () => {

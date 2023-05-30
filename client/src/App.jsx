@@ -160,11 +160,11 @@ const App = () => {
           </main>
         </div>
         <ToastContainer
-          position="top-right"
+          position="top-center"
           closeOnClick={true}
           pauseOnHover={false}
           pauseOnFocusLoss={false}
-          autoClose={5000}
+          autoClose={1000 * 60 * 3}
           draggable={true}
           closeButton={<p>Close</p>}
           icon={{

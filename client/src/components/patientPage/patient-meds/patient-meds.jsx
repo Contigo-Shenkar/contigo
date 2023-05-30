@@ -13,8 +13,11 @@ import { toast } from "react-toastify";
 import Header from "../../header/Header";
 import { useParams } from "react-router-dom";
 import { Avatar, Typography } from "@mui/material";
+import HorizontalLinearStepper from "./stepper";
 
 export const PatientMeds = () => {
+  const [activeStep, setActiveStep] = useState(0);
+
   const [reviewText, setReviewText] = useState("");
   const [alternativeMedications, setAlternativeMedications] = useState([]);
   const [algoAlternativeMedications, setAlgoAlternativeMedications] = useState(
@@ -77,6 +80,8 @@ export const PatientMeds = () => {
         }
         setAlternativeMedications(data.alternatives);
         setAlgoAlternativeMedications([]);
+        toast.success("Medication replaced successfully");
+        setActiveStep(2);
       } catch (e) {
         console.log(e);
         return toast.error(e.message);
@@ -94,7 +99,8 @@ export const PatientMeds = () => {
       });
 
       console.log("data", data);
-      if (data.alternativeMedications.length) {
+      if (data?.alternativeMedications.length) {
+        setActiveStep(1);
         toast.warning("Showing alternative medications.");
         setReplacedMed(patient.medication[0]);
         setAlgoAlternativeMedications(data.alternativeMedications);
@@ -104,6 +110,7 @@ export const PatientMeds = () => {
       setReviewText("");
     } catch (error) {
       console.error("Error:", error);
+      toast.error(error.message);
     }
   };
 
@@ -185,6 +192,8 @@ export const PatientMeds = () => {
           {patient.fullName}'s Medication and Reviews
         </Typography>
       </Box>
+      <HorizontalLinearStepper activeStep={activeStep} />
+      <br />
       <form onSubmit={handleAddReview}>
         <Header title="Add Child Review" subtitle="Add new review" />
 
@@ -246,7 +255,7 @@ export const PatientMeds = () => {
           },
         }}
       >
-        <Header title="Medication History" />
+        <Header title="Current Medication & History" />
         {rows && columns && (
           <DataGrid
             rows={rows}
@@ -256,8 +265,9 @@ export const PatientMeds = () => {
           />
         )}
         <br />
-        <br />
+
         <Header title="Review History" subtitle="Add new review" />
+        <br />
 
         {reviewHistory.rows && reviewHistory.columns && (
           <DataGrid
@@ -354,6 +364,9 @@ function getAlgoAlternativeMeds(
     ...med,
     id: med.medication,
     score: Number(med["score"]).toFixed(2),
+    sideEffect: med["sideEffectPercent"]
+      ? med["detectedSideEffect"] + ": " + med["sideEffectPercent"]
+      : "",
   }));
   const columns = [
     {
@@ -364,6 +377,11 @@ function getAlgoAlternativeMeds(
     {
       field: "score",
       headerName: "Score",
+      flex: 1,
+    },
+    {
+      field: "sideEffect",
+      headerName: "Side Effect",
       flex: 1,
     },
     {

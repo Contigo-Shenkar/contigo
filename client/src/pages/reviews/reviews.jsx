@@ -58,10 +58,10 @@ export const Reviews = () => {
               width={40}
               src={params.row.imageUrl}
               alt={params.value}
-              style={{ borderRadius: "50px" }}
+              style={{ borderRadius: "50px", height: "40px" }}
             />
             <Link
-              to={`/patients/${params.row._id}`}
+              to={`/patients/${params.row._id}/review-and-meds`}
               style={{ color: colors.greenAccent[300], textDecoration: "none" }}
             >
               {params.value}
@@ -93,7 +93,7 @@ export const Reviews = () => {
   return (
     <Box m="20px">
       <Header
-        title="Patients Tasks Monitoring"
+        title="Children Reviews"
         subtitle="Managing a tokens calculation system for the Children’s Psychiatric Unit "
       />
       <Box

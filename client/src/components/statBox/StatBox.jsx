@@ -2,7 +2,14 @@ import { Box, Typography, useTheme } from "@mui/material";
 import { tokens } from "../../theme";
 import ProgressCircle from "../progressCircle/ProgressCircle";
 
-const StatBox = ({ title, subtitle, icon, progress, increase }) => {
+const StatBox = ({
+  title,
+  subtitle,
+  icon,
+  progress,
+  increase,
+  images = [],
+}) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
@@ -22,6 +29,28 @@ const StatBox = ({ title, subtitle, icon, progress, increase }) => {
         {progress ? (
           <Box>
             <ProgressCircle progress={progress} />
+          </Box>
+        ) : null}
+        {images.length ? (
+          <Box position={"relative"}>
+            {images.map((image, index) => (
+              <img
+                key={index}
+                src={image}
+                alt="stat"
+                style={{
+                  width: "50px",
+                  height: "50px",
+                  objectFit: "cover",
+                  objectPosition: "top",
+                  borderRadius: "50%",
+                  position: "absolute",
+                  maxWidth: "unset",
+                  border: `3px solid ${colors.greenAccent[500]}`,
+                  right: `${index * 30}px`,
+                }}
+              />
+            ))}
           </Box>
         ) : null}
       </Box>
