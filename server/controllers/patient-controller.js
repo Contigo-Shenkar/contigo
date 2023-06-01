@@ -1,13 +1,8 @@
 import { STATUSES } from "../helpers/tasks.js";
 import patientModel from "../models/patientModel.js";
 import mongoose from "mongoose";
-// import DiagnosesAndMeds from "../helpers/diagnoses-and-meds.json" assert { type: "json" };
-import { createRequire } from "node:module";
-const require = createRequire(import.meta.url);
-const DiagnosesAndMeds = require("../helpers/diagnoses-and-meds.json");
-
+import DiagnosesAndMeds from "../helpers/diagnoses-and-meds.json" assert { type: "json" };
 import { checkPatientStage } from "./helpers/check-stage.js";
-
 import fetch from "node-fetch";
 import {
   SIDE_EFFECT as SIDE_EFFECTS,

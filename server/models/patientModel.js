@@ -5,6 +5,11 @@ import * as stages from "../../client/src/helpers/stages.mjs";
 import { checkPatientStage } from "../controllers/helpers/check-stage.js";
 const { daysPerStage } = stages;
 
+const getDateDiffInDays = (date1, date2) => {
+  const diffTime = Math.abs(date2 - date1);
+  return Math.ceil(diffTime / dayInMs);
+};
+
 const taskSchema = new mongoose.Schema({
   task: { type: String, required: true },
   tokenType: {
@@ -74,6 +79,16 @@ const patientSchema = new mongoose.Schema({
     ],
     default: [],
   },
+  insights: {
+    type: [
+      {
+        bad: Boolean,
+        text: String,
+        when: Date,
+      },
+    ],
+    default: [],
+  },
   createdAt: { type: Date, default: new Date() },
   tasks: { type: [taskSchema] },
 });
@@ -130,10 +145,20 @@ export default patientModel;
   // }
 })();
 
+const ONE_DAY = 1000 * 60 * 60 * 24;
 // interval for checking the ability to level up
 setInterval(async () => {
   const patients = await patientModel.find();
   for (const patient of patients) {
+    const { insights } = getInsights(patient);
+    const insightsWithDate = insights.map((insight) => ({
+      ...insight,
+      when: new Date(),
+    }));
+    patient.insights = insightsWithDate;
+
+    await patient.save();
+
     const minimumDays = daysPerStage[patient.stage];
     const daysOnStage = Math.floor(
       (new Date() - new Date(patient.stageStartDate)) / (1000 * 60 * 60 * 24)
@@ -155,7 +180,405 @@ setInterval(async () => {
       patient.tasks.forEach((task) => {
         task.hidden = true;
       });
-      await patient.save();
     }
   }
-}, 1000 * 60 * 60 * 24);
+}, ONE_DAY);
+
+const getInsights = (patient) => {
+  if (!patient?.tasks) return [];
+
+  const last7days = getPast7Days();
+
+  let completedAllTimeCount = 0;
+  let completedTodayCount = 0;
+  let completedRegularLast3Days = 0;
+  let completedBonusLast3Days = 0;
+  let completedBonusThisStage = 0;
+  const availableStageTasks = { bonus: 0, regular: 0 };
+  const openTasksInTheLast7Days = [];
+  const completedTasksInTheLast7Days = [];
+  const failedTasksTypes = new Set();
+
+  const categoryCount = {};
+
+  for (const t of patient?.tasks) {
+    const category = categoryPerActivity.get(t.task);
+    categoryCount[category] = categoryCount[category] || 0 + 1;
+
+    if (t.status === STATUSES.IN_PROGRESS && isLastXDays(t.completedAt, 7)) {
+      openTasksInTheLast7Days.push(t);
+      failedTasksTypes.add(t.taskType);
+    } else if (t.status === STATUSES.COMPLETED) {
+      completedAllTimeCount++;
+
+      if (!t.hidden) {
+        completedTasksInTheLast7Days.push(t);
+        if (isLastXDays(t.completedAt, 7)) {
+          const key = getDayAndMonth(t.completedAt);
+          last7days[key]++;
+
+          if (isLastXDays(t.completedAt, 3)) {
+            if (t.tokenType === "bonus") {
+              completedBonusLast3Days++;
+            } else {
+              completedRegularLast3Days++;
+            }
+
+            if (isToday(new Date(t.completedAt))) {
+              completedTodayCount++;
+            }
+          }
+        }
+      }
+    }
+
+    if (!t.hidden) {
+      availableStageTasks[t.tokenType]++;
+
+      if (t.tokenType === "bonus" && t.status === STATUSES.COMPLETED) {
+        completedBonusThisStage++;
+      }
+    }
+  }
+
+  const pieChartData = [];
+  for (const [category, count] of Object.entries(categoryCount)) {
+    pieChartData.push({
+      id: category,
+      label: category,
+      value: count,
+      // color: colors[category],
+    });
+  }
+
+  const insights = [];
+  if (completedBonusLast3Days === 0) {
+    insights.push({
+      text: "No bonus tasks was completed in the last 3 days",
+      bad: true,
+    });
+  }
+
+  const daysAtStage = getDateDiffInDays(
+    new Date(patient.stageStartDate).getTime(),
+    Date.now()
+  );
+
+  const finishedBonusPercent =
+    completedBonusThisStage / availableStageTasks.bonus;
+  if (
+    finishedBonusPercent < 0.8 &&
+    daysAtStage + daysPerStage[patient.stage] / 4 >= daysPerStage[patient.stage]
+  ) {
+    insights.push({
+      text: `Only ${Math.round(
+        (completedBonusThisStage / availableStageTasks.bonus) * 100
+      )}% of bonus tasks was completed at current stage`,
+      bad: true,
+    });
+  } else if (finishedBonusPercent > 0.8) {
+    insights.push({
+      text: `Patient is doing great at current stage: ${
+        finishedBonusPercent * 100
+      }% of bonus tasks was completed`,
+      bad: true,
+    });
+  }
+
+  if (completedRegularLast3Days === 0) {
+    insights.push({
+      text: `No regular tasks was completed in the last 3 days`,
+      bad: true,
+    });
+  }
+  if (availableStageTasks.regular < 2) {
+    insights.push({
+      text: `Only ${availableStageTasks.regular} regular tasks assigned at current stage`,
+      bad: true,
+    });
+  }
+  if (availableStageTasks.bonus < 2) {
+    insights.push({
+      text: `Only ${availableStageTasks.bonus} bonus tasks assigned at current stage`,
+      bad: true,
+    });
+  }
+
+  if (daysAtStage > daysPerStage[patient.stage]) {
+    insights.push({
+      text: `Patient is already ${
+        insights.daysAtStage
+      } days at current stage, which
+        is more than the average of ${daysPerStage[insights.stage]} days`,
+      bad: true,
+    });
+  }
+
+  if (failedTasksTypes.size > 0) {
+    insights.push({
+      text: `Patient failed tasks typical to the following diagnoses: ${[
+        ...failedTasksTypes,
+      ].join(", ")}`,
+      bad: true,
+    });
+  }
+
+  return {
+    failedTasksTypes,
+    openTasksInTheLast7Days,
+    completedTasksInTheLast7Days,
+    last7days,
+    completedAllTimeCount,
+    completedTodayCount,
+    pieChartData,
+    completedRegularLast3Days,
+    completedBonusLast3Days,
+    availableStageTasks,
+    insights,
+    daysAtStage,
+  };
+};
+
+const dayInMs = 24 * 60 * 60 * 1000;
+function isLastXDays(date, days) {
+  return new Date(date).getTime() > new Date().getTime() - days * dayInMs;
+}
+
+function getPast7Days() {
+  const today = new Date();
+  const dateObj = {};
+  [...Array(7)]
+    .map((_, i) => {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      return date;
+    })
+    .forEach((date) => {
+      const day = date.getDate();
+      const month = date.getMonth() + 1;
+      dateObj[`${day}/${month}`] = 0;
+    });
+  return dateObj;
+}
+
+export const categoryPerActivity = new Map();
+
+export const regularTasks = "Regular Tasks";
+
+export const taskCategories = {
+  [regularTasks]: [
+    "Brushing teeth",
+    "Washing face",
+    "Showering",
+    "Getting dressed",
+    "Making the bed",
+    "Preparing and having breakfast",
+    "Preparing and packing lunch",
+    "Reviewing schedule and tasks for the day",
+    "Taking medication or supplements",
+    "Active listening",
+    "Effective communication",
+    "Problem-solving",
+    "Decision-making",
+    "Empathy",
+    "Open-mindedness",
+    "Respectfulness",
+    "Responsibility",
+    "Self-awareness",
+    "Self-control",
+    "Self-esteem",
+    "Perseverance",
+  ],
+  "Sensory Activities": [
+    "Finger painting",
+    "Sensory bin",
+    "water play",
+    "Bubble wrap popping",
+    "Kinetic sand",
+    "Scented playdough",
+    "Sensory balls or fidget toys",
+    "Tactile sensory boards",
+    "Sensory bottles filled with glitter or other objects",
+    "Sensory walks in nature",
+    "Sensory storytelling",
+    "Sensory art projects",
+    "Sensory rooms or spaces",
+    "Weighted blankets or vests",
+    "Body socks or tunnels",
+    "Trampolines or jumping exercises",
+    "Swinging or rocking",
+    "Playing with textured fabrics or materials",
+    "Tactile puzzles or games",
+    "Bubble baths or water play with toys",
+    "Playing with slime or oobleck",
+    "Sensory integration games like bean bag toss or ball catching",
+  ],
+  "Personal expression and reflection": [
+    "Sensory-friendly cooking or baking",
+    "Foam play or shaving cream art",
+    "Sensory-friendly gardening or planting",
+    "Listening to calming music or sounds",
+    "Exploring with different scents and aromas",
+    "Sensory-friendly science experiments",
+    "Creative writing classes",
+    "Role-playing exercises",
+    "Improvisation exercises",
+    "Personal storytelling",
+    "Writing a memoir or personal essay",
+    "Participating in a book club or discussion group",
+    "Taking a personal development course or workshop",
+    "Vision boarding",
+    "Dream analysis",
+    "Mind mapping",
+    "Drawing a self-portrait",
+    "Writing a letter to oneself",
+    "Creating a personal mission statement",
+    "Goal setting",
+    "Reflective writing exercises",
+    "Analyzing and interpreting personal symbols",
+    "Practicing mindfulness",
+    "Participating in a spiritual retreat",
+    "Chanting or affirmations",
+    "Practicing gratitude",
+    "Volunteering",
+    "Participating in a support group",
+    "Building a personal altar",
+    "Designing a personal flag or banner",
+    "Making a gratitude jar or journal",
+    "Creating art",
+    "Making music",
+    "Dance therapy",
+  ],
+  "Music Therapy": ["Singing", "Playing instrument", "Listening to music"],
+  "Outdoor Activities": [
+    "Playing in the park",
+    "Going for a walk",
+    "Riding a bike",
+    "Hiking",
+    "Horseback riding",
+    "Gardening",
+  ],
+  "Social Skills Groups": [
+    "Team building",
+    "Board games that encourage cooperation",
+    "Role-playing",
+    "Cooperative games",
+    "Team sports",
+  ],
+  "Art Therapy": [
+    "Drawing",
+    "Painting",
+    "Sculpting",
+    "Martial arts classes",
+    "Drawing or coloring mandalas",
+    "Painting with watercolors or acrylics",
+    "Creating collages using magazine cutouts or other materials",
+    "Making sculptures or 3D art with clay or other materials",
+    "Journaling or writing poetry",
+    "Creating a vision board with images",
+    "Designing and decorating a dreamcatcher",
+  ],
+  "Physical Activities": [
+    "Swimming",
+    "Dancing",
+    "Yoga",
+    "Gardening",
+    "Running or jogging",
+    "Walking",
+    "Skiing",
+    "Soccer",
+    "Rock climbing",
+    "Rafting",
+    "Pilates",
+    "Tennis",
+    "Team sports like football, rugby, or baseball",
+    "Roller skating or rollerblading",
+    "Basketball",
+  ],
+  Relaxation: [
+    "Progressive muscle relaxation",
+    "Body scan meditation",
+    "Mindfulness meditation",
+    "Deep breathing exercises",
+    "Visualization",
+    "Listening to soothing music",
+    "Taking a warm bath or shower",
+    "Spending time in nature",
+    "Mindful walking",
+    "Reading a book",
+    "Watching a movie or TV show",
+    "Journaling",
+    "Coloring books for adults",
+    "Knitting or crocheting",
+    "Playing with a pet",
+    "Stretching",
+    "Taking a nap",
+    "Spending time in a sauna or steam room",
+    "Having a cup of herbal tea",
+    "Doing a puzzle or Sudoku",
+    "Getting a manicure or pedicure",
+    "Acupuncture",
+    "Reiki",
+    "Reflexology",
+    "Float therapy",
+  ],
+  "Therapy and communication": [
+    "Talk therapy",
+    "Cognitive Behavioral Therapy (CBT)",
+    "Animal-assisted therapy",
+  ],
+  "Creative Expression": [
+    "Learning and practicing money management skills",
+    "Learning and practicing self-advocacy skills",
+    "Practicing personal safety skills",
+  ],
+  "Independent Living Skills": [
+    "Learning and practicing money management skills",
+    "Learning and practicing self-advocacy skills",
+    "Practicing personal safety skills",
+  ],
+  "Language Skills": [
+    "Reading and storytelling",
+    "Learning and practicing occupational skills through volunteer or work programs",
+    "Word games (e.g. Scrabble, Boggle, Hangman)",
+    "Learning new words each week",
+    "Picture books",
+    "Role-playing",
+    "Volunteering for community activities that involve communication skills",
+    "Attending speech therapy sessions",
+    "Writing stories, letters, or emails",
+    "Learning new languages",
+    "Conversation practice",
+  ],
+  "Support groups activities": [
+    "Support groups",
+    "Group discussions",
+    "Role-playing",
+    "Creative expression",
+    "Mindfulness exercises",
+    "Guest speakers",
+    "Goal setting",
+    "Social activities",
+    "Celebrations",
+  ],
+};
+
+for (const category of Object.keys(taskCategories)) {
+  for (const activity of taskCategories[category]) {
+    categoryPerActivity.set(activity, category);
+  }
+}
+function getDayAndMonth(date) {
+  const dateObj = new Date(date);
+  const day = dateObj.getDate();
+  const month = dateObj.getMonth() + 1;
+  return `${day}/${month}`;
+}
+function isToday(date) {
+  const today = new Date();
+  return (
+    date.getDate() === today.getDate() &&
+    date.getMonth() === today.getMonth() &&
+    date.getFullYear() === today.getFullYear()
+  );
+}

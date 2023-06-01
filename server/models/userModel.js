@@ -4,7 +4,7 @@ const userSchema = new mongoose.Schema({
   fullName: { type: String, required: true },
   email: { type: String, required: true },
   password: { type: String, required: true },
-  imageUrl: { type: String },
+  imageUrl: { type: String, required: true },
   // if exist, this is a parent user
   childId: { type: String, default: "" },
   userType: {
