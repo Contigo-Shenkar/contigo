@@ -5,6 +5,7 @@ export function analyzeTasksCompletion(patients, date = "all", stage = "all") {
   const analyzePatient = (patient) => {
     let openTasksCount = 0;
     let completedTasks = 0;
+    let completedTasksThisStage = 0;
     let completedRegularTasks = 0;
     let completedBonusTasks = 0;
     let totalRegularTasks = 0;
@@ -24,9 +25,9 @@ export function analyzeTasksCompletion(patients, date = "all", stage = "all") {
         continue;
       }
 
-      if (task.tokenType === "regular") {
+      if (task.tokenType === "regular" && !task.hidden) {
         totalRegularTasks++;
-      } else if (task.tokenType === "bonus") {
+      } else if (task.tokenType === "bonus" && !task.hidden) {
         totalBonusTasks++;
       }
 
@@ -37,8 +38,9 @@ export function analyzeTasksCompletion(patients, date = "all", stage = "all") {
         } else if (task.tokenType === "bonus") {
           inProgressBonusCount++;
         }
-      } else if (task.status === STATUSES.COMPLETED) {
+      } else if (task.status === STATUSES.COMPLETED && !task.hidden) {
         completedTasks++;
+
         if (task.tokenType === "regular") {
           completedRegularTasks++;
         } else if (task.tokenType === "bonus") {
@@ -94,6 +96,7 @@ export function analyzeTasksCompletion(patients, date = "all", stage = "all") {
       openTasksCount,
       isSuccessful,
       daysAtStage,
+      completedTasksThisStage,
     };
   };
 
