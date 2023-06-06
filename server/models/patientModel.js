@@ -150,6 +150,7 @@ const ONE_DAY = 1000 * 60 * 60 * 24;
 setInterval(async () => {
   const patients = await patientModel.find();
   for (const patient of patients) {
+    // insights
     const { insights } = getInsights(patient);
     const insightsWithDate = insights.map((insight) => ({
       ...insight,
@@ -159,6 +160,7 @@ setInterval(async () => {
 
     await patient.save();
 
+    // check if enough days on stage
     const minimumDays = daysPerStage[patient.stage];
     const daysOnStage = Math.floor(
       (new Date() - new Date(patient.stageStartDate)) / (1000 * 60 * 60 * 24)
@@ -170,6 +172,8 @@ setInterval(async () => {
     } else {
       console.log("enough days on stage", patient.fullName);
     }
+
+    // check if all tasks are completed
     const { isSuccessful } = checkPatientStage(patient);
     console.log(patient.fullName, "isSuccessful", isSuccessful);
 
@@ -177,10 +181,14 @@ setInterval(async () => {
       console.log("level up", patient.fullName);
       const nextStage = patient.stage + 1;
       patient.stage = Math.min(nextStage, 5); // max stage is 5
+      patient.stageStartDate = new Date();
       patient.tasks.forEach((task) => {
+        // mark all tasks as hidden (previous stage tasks)
         task.hidden = true;
       });
     }
+
+    await patient.save();
   }
 }, ONE_DAY);
 
@@ -266,22 +274,35 @@ const getInsights = (patient) => {
 
   const finishedBonusPercent =
     completedBonusThisStage / availableStageTasks.bonus;
+
+  // 13 + 5 >= 20 // no - no alert
+  // 15 +5 = 20 >= 20 // yes -  alert!
+
+  // 10  - 8 = 80%
+  // 2 - 1 = 50%
+  // 12 - 9 = 75%
+
   if (
-    finishedBonusPercent < 0.8 &&
+    finishedBonusPercent < 0.2 &&
+    // check if patient is in the last quarter of the stage expected duration
     daysAtStage + daysPerStage[patient.stage] / 4 >= daysPerStage[patient.stage]
   ) {
     insights.push({
       text: `Only ${Math.round(
         (completedBonusThisStage / availableStageTasks.bonus) * 100
-      )}% of bonus tasks was completed at current stage`,
+      )}% of bonus tasks was completed at current stage.`,
       bad: true,
     });
-  } else if (finishedBonusPercent > 0.8) {
+    insights.push({
+      text: "Consider having a review with the patient",
+      bad: true,
+    });
+  } else if (finishedBonusPercent > 0.2) {
     insights.push({
       text: `Patient is doing great at current stage: ${
         finishedBonusPercent * 100
       }% of bonus tasks was completed`,
-      bad: true,
+      bad: false,
     });
   }
 
@@ -290,26 +311,29 @@ const getInsights = (patient) => {
       text: `No regular tasks was completed in the last 3 days`,
       bad: true,
     });
-  }
-  if (availableStageTasks.regular < 2) {
+  } else {
     insights.push({
-      text: `Only ${availableStageTasks.regular} regular tasks assigned at current stage`,
+      text: `Patient is doing great at current stage: ${completedRegularLast3Days} regular tasks was completed in the last 3 days`,
+      bad: false,
+    });
+  }
+  if (availableStageTasks.regular < 5) {
+    insights.push({
+      text: `Only ${availableStageTasks.regular} regular tasks assigned at current stage (need at least 5)`,
       bad: true,
     });
   }
   if (availableStageTasks.bonus < 2) {
     insights.push({
-      text: `Only ${availableStageTasks.bonus} bonus tasks assigned at current stage`,
+      text: `Only ${availableStageTasks.bonus} bonus tasks assigned at current stage (need at least 2)`,
       bad: true,
     });
   }
 
   if (daysAtStage > daysPerStage[patient.stage]) {
     insights.push({
-      text: `Patient is already ${
-        insights.daysAtStage
-      } days at current stage, which
-        is more than the average of ${daysPerStage[insights.stage]} days`,
+      text: `Patient is already ${daysAtStage} days at current stage, which
+        is more than the average of ${daysPerStage[patient.stage]} days`,
       bad: true,
     });
   }
@@ -319,6 +343,18 @@ const getInsights = (patient) => {
       text: `Patient failed tasks typical to the following diagnoses: ${[
         ...failedTasksTypes,
       ].join(", ")}`,
+      bad: true,
+    });
+  }
+
+  let badInsightsCount = 0;
+  for (const { bad } of insights) {
+    badInsightsCount += bad ? 1 : 0;
+  }
+
+  if (badInsightsCount > 4) {
+    insights.push({
+      text: `We detected ${badInsightsCount} issues with this patient. Consider having a review with the patient`,
       bad: true,
     });
   }

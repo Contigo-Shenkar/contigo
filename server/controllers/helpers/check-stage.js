@@ -19,14 +19,14 @@ export function checkPatientStage(patient) {
       totalBonusTasks++;
     }
 
-    if (task.status === STATUSES.IN_PROGRESS) {
+    if (task.status === STATUSES.IN_PROGRESS && !task.hidden) {
       openTasksCount++;
       if (task.tokenType === "regular") {
         inProgressRegularCount++;
       } else if (task.tokenType === "bonus") {
         inProgressBonusCount++;
       }
-    } else if (task.status === STATUSES.COMPLETED) {
+    } else if (task.status === STATUSES.COMPLETED && !task.hidden) {
       completedTasks++;
       if (task.tokenType === "regular") {
         completedRegularTasks++;
@@ -36,10 +36,6 @@ export function checkPatientStage(patient) {
     }
   }
 
-  const completedTasksPercent =
-    patient.tasks.length > 0
-      ? (completedTasks / patient.tasks.length) * 100
-      : 0;
   const completedRegularTasksPercent =
     totalRegularTasks > 0
       ? (completedRegularTasks / totalRegularTasks) * 100
@@ -54,6 +50,10 @@ export function checkPatientStage(patient) {
     completedBonusTasksPercent >= 20 &&
     completedRegularTasks >= 4 &&
     completedBonusTasks >= 1;
+  console.log("completedBonusTasks", completedBonusTasks);
+  console.log("completedRegularTasks", completedRegularTasks);
+  console.log("completedBonusTasksPercent", completedBonusTasksPercent);
+  console.log("completedRegularTasksPercent", completedRegularTasksPercent);
 
   if (!isSuccessful) {
     if (completedRegularTasksPercent < 80) {

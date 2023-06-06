@@ -130,54 +130,6 @@ export const addReview = async (req, res) => {
       return;
     }
 
-    // if (patient.medication?.length > 0) {
-    //   // meds prescribed to patient
-    //   const relevantMedications = [];
-
-    //   for (const medication of DiagnosesAndMeds) {
-    //     for (const patientMed of patient.medication) {
-    //       if (
-    //         medication[medKey] === patientMed.medication &&
-    //         medication[diagnosisKey] === patientMed.condition
-    //       ) {
-    //         relevantMedications.push(medication);
-    //       }
-    //     }
-    //   }
-
-    //   const recognizedSymptoms = [];
-    //   const relevantDiagnoses = new Set();
-
-    //   // current meds with side effects
-    //   const sideAffectMeds = new Set();
-    //   for (const medication of relevantMedications) {
-    //     for (const symptom of medication["Problem/side effects"]) {
-    //       if (content.includes(symptom.toLowerCase())) {
-    //         relevantDiagnoses.add(medication[diagnosisKey]);
-    //         sideAffectMeds.add(medication[medKey]);
-    //         recognizedSymptoms.push({
-    //           diagnosis: medication[diagnosisKey],
-    //           symptom,
-    //           med: medication[medKey],
-    //         });
-    //       }
-    //     }
-    //   }
-
-    //   if (!patient.reviews) {
-    //     patient.reviews = [];
-    //   }
-    //   patient.reviews.push({ content, recognizedSymptoms });
-
-    //   const alternativeMedications = DiagnosesAndMeds.filter(
-    //     (med) =>
-    //       relevantDiagnoses.has(med[diagnosisKey]) &&
-    //       !sideAffectMeds.has(med[medKey])
-    //   );
-    //   await patient.save();
-    //   return res.json({ alternativeMedications, recognizedSymptoms });
-    // }
-
     patient.reviews.push({ content });
     await patient.save();
     res.json(patient);
@@ -359,6 +311,8 @@ export const checkStage = async (req, res) => {
   try {
     const patient = await patientModel.findById(patientId);
     const { isSuccessful, reason } = checkPatientStage(patient);
+    console.log("reason", reason);
+    console.log("isSuccessful", isSuccessful);
 
     res.json({ isSuccessful, reason });
   } catch (error) {
