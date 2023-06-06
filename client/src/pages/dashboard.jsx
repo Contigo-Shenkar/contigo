@@ -180,10 +180,10 @@ const Dashboard = () => {
         <Header title="Dashboard" subtitle="Welcome to your dashboard" />
       </Box>
 
-      {user.childId ? (
+      {user?.childId ? (
         <Box my={2}>
           <Typography>
-            Showing data for patient with id: {user.childId}
+            Showing data for patient with id: {user?.childId}
           </Typography>
         </Box>
       ) : null}
@@ -273,7 +273,7 @@ const Dashboard = () => {
 
         {/* ROW 2 */}
         <Box
-          gridColumn={user.childId ? "span 12" : "span 8"}
+          gridColumn={user?.childId ? "span 12" : "span 8"}
           gridRow="span 2"
           backgroundColor={themeColors.primary[400]}
         >
@@ -319,7 +319,7 @@ const Dashboard = () => {
             />
           </Box>
         </Box>
-        {!user.childId ? (
+        {!user?.childId ? (
           <Box
             gridColumn="span 4"
             gridRow="span 2"
@@ -343,7 +343,7 @@ const Dashboard = () => {
               </Typography>
             </Box>
             {recentlyVisited.map((patientId, i) => {
-              const patient = patients.find((p) => p._id === patientId);
+              const patient = patients?.find((p) => p._id === patientId);
               if (!patient) return null;
               return (
                 <Box
@@ -472,7 +472,7 @@ const Dashboard = () => {
               Last insights
             </Typography>
           </Box>
-          {dashboardData.insights.map((insights, index) => {
+          {dashboardData?.insights?.map((insights, index) => {
             const patient = patients[index];
             if (!patient) return null;
             return (

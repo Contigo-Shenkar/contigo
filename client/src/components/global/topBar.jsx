@@ -93,17 +93,33 @@ const Topbar = () => {
       </Box>
       <Dialog open={open} onClose={() => setOpen(false)}>
         <Box sx={{ minWidth: "500px" }}>
-          <DialogTitle>Latest insights</DialogTitle>
+          <DialogTitle sx={{ fontSize: "20px" }}>Notifications</DialogTitle>
           <DialogContent>
-            {patients?.data &&
+            {user &&
+              patients?.data &&
               patients.data.length > 0 &&
               patients.data
                 .filter((p) => String(p.id).includes(user.childId))
                 .map((patient, index) => (
                   <Box key={index} sx={{ padding: "10px" }}>
-                    <Typography variant="h3">{patient.fullName}</Typography>
+                    <Box>
+                      <Box display="flex" alignItems="center" gap="10px">
+                        <img
+                          alt="profile-user"
+                          src={patient?.imageUrl || "/assets/images/user.png"}
+                          style={{
+                            cursor: "pointer",
+                            borderRadius: "50%",
+                            objectFit: "cover",
+                            width: "60px",
+                            height: "60px",
+                          }}
+                        />
+                        <Typography variant="h3">{patient.fullName}</Typography>
+                      </Box>
+                    </Box>
                     <Typography variant="h6">
-                      {new Date(patient.insights[0].when).toLocaleString(
+                      {new Date(patient.insights[0]?.when).toLocaleString(
                         "en-GB"
                       )}
                     </Typography>
@@ -112,7 +128,18 @@ const Topbar = () => {
                         return (
                           <Typography
                             sx={{
-                              color: insight.bad === true ? "red" : "green",
+                              color: "white",
+                              borderLeft: `2px solid ${
+                                insight.bad === true ? "red" : "green"
+                              }`,
+                              margin: "5px",
+                              padding: "10px",
+                              boxShadow: "rgba(0, 0, 0, 0.35) 0px 5px 15px",
+                              ":hover": {
+                                cursor: "pointer",
+                                backgroundColor: "rgba(0, 0, 0, 0.35)",
+                                animation: "wiggle 2s linear infinite",
+                              },
                             }}
                           >
                             {insight.text}
@@ -122,7 +149,6 @@ const Topbar = () => {
                     </Box>
                   </Box>
                 ))}
-            <Typography>:</Typography>
           </DialogContent>
         </Box>
       </Dialog>

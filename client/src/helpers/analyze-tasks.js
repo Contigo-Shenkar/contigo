@@ -51,7 +51,7 @@ export function analyzeTasksCompletion(patients, date = "all", stage = "all") {
 
     const completedTasksPercent =
       patient.tasks.length > 0
-        ? (completedTasks / patient.tasks.length) * 100
+        ? (completedTasks / (totalRegularTasks + totalBonusTasks)) * 100
         : 0;
     const completedRegularTasksPercent =
       totalRegularTasks > 0
