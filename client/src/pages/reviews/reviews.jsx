@@ -12,6 +12,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import { Box, useTheme } from "@mui/material";
 
 import Header from "../../components/header/Header";
+import ProgressCircle from "../../components/progressCircle/ProgressCircle";
 
 export const Reviews = () => {
   const { data, isLoading, isError } = useGetPatientsQuery();
@@ -83,7 +84,7 @@ export const Reviews = () => {
   ];
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <ProgressCircle />;
   }
 
   if (isError) {

@@ -170,7 +170,7 @@ const Dashboard = () => {
   }, [patients, themeColors, user]);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <ProgressCircle />;
   }
 
   console.log({ dashboardData });

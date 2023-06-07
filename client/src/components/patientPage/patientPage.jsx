@@ -105,7 +105,7 @@ export const PatientPage = () => {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <ProgressCircle />;
   }
 
   if (isError) {

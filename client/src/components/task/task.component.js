@@ -27,6 +27,7 @@ import Header from "../header/Header";
 import { analyzeTasks } from "../patientInfo/patientInfo";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { STATUSES } from "../patientTasks/tasks";
+import ProgressCircle from "../progressCircle/ProgressCircle";
 
 const Task = ({ patientTask, refetchTasks }) => {
   const { id } = useParams();
@@ -60,7 +61,9 @@ const Task = ({ patientTask, refetchTasks }) => {
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) {
+    return <ProgressCircle />;
+  }
 
   return (
     <Card

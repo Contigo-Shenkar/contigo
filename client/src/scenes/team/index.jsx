@@ -7,6 +7,7 @@ import LockOpenOutlinedIcon from "@mui/icons-material/LockOpenOutlined";
 import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined";
 import Header from "../../components/header/Header";
 import { useGetPatientsQuery } from "../../features/apiSlice";
+import ProgressCircle from "../../components/progressCircle/ProgressCircle";
 
 const PatientsList = () => {
   const { data: patients, isLoading, isError } = useGetPatientsQuery();
@@ -85,7 +86,7 @@ const PatientsList = () => {
   ];
 
   if (isLoading) {
-    return <div>loading...</div>;
+    return <ProgressCircle />;
   }
   return (
     <Box m="20px">
