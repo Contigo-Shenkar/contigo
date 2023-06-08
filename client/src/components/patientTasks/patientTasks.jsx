@@ -44,7 +44,6 @@ import Header from "../header/Header";
 import { STATUSES, regularTasks, taskCategories } from "./tasks";
 import { toast } from "react-toastify";
 import DateRangePicker from "./date-range-picker";
-import ProgressCircle from "../progressCircle/ProgressCircle";
 
 const ALL_STATUSES = "all-statuses";
 
@@ -184,7 +183,7 @@ const PatientTasks = () => {
   };
 
   if (isLoading) {
-    return <ProgressCircle />;
+    return <div>Loading...</div>;
   }
 
   if (isError) {

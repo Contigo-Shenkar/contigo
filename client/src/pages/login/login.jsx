@@ -8,10 +8,17 @@ import Button from "../../components/button/button";
 import { Link, useNavigate } from "react-router-dom";
 import { useLoginMutation } from "../../features/authSlice";
 import { toast } from "react-toastify";
+import {
+  useGetPatientsQuery,
+  useTokenLoginQuery,
+} from "../../features/apiSlice";
 
 export function Login() {
   const [email, setEmail] = useState(null);
   const [password, setPass] = useState(null);
+  // const { refetch } = useGetPatientsQuery();
+  const { refetch } = useTokenLoginQuery();
+
   const navigate = useNavigate();
 
   const [
@@ -24,6 +31,7 @@ export function Login() {
     try {
       if (email && password) {
         await login({ email, password });
+        await refetch();
       }
     } catch (err) {
       console.log(err);

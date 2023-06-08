@@ -9,7 +9,6 @@ import ChildCareIcon from "@mui/icons-material/ChildCare";
 import TokenIcon from "@mui/icons-material/Token";
 import VaccinesIcon from "@mui/icons-material/Vaccines";
 //import charts for dashboard
-import ProgressCircle from "../components/progressCircle/ProgressCircle";
 import LineChart from "../components/lineChart/lineChart";
 import StatBox from "../components/statBox/StatBox";
 import PieChart from "../components/pieChart/pieChart";
@@ -137,7 +136,8 @@ const Dashboard = () => {
       pastWeekCompletedTasksImages
     );
 
-    const maxBonus = Math.max(Object.values(bonusThisWeek));
+    const bonusCount = Object.values(bonusThisWeek);
+    const maxBonus = Math.max(...bonusCount);
     const bestBonusImage = Object.keys(bonusThisWeek).find(
       (key) => bonusThisWeek[key] === maxBonus
     );
@@ -170,7 +170,7 @@ const Dashboard = () => {
   }, [patients, themeColors, user]);
 
   if (isLoading) {
-    return <ProgressCircle />;
+    return <div>Loading...</div>;
   }
 
   console.log({ dashboardData });
